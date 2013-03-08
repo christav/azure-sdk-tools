@@ -48,6 +48,7 @@ namespace Microsoft.WindowsAzure.Management.Websites.Test.UnitTests.Cmdlets
             Assert.IsTrue(locations.Any(loc => loc.Equals("West US")));
             Assert.IsTrue(locations.Any(loc => loc.Equals("North Europe")));
             Assert.IsTrue(locations.Any(loc => loc.Equals("West Europe")));
+            Assert.IsTrue(locations.Any(loc => loc.Equals("East Asia")));
         }
     }
 }

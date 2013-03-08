@@ -24,7 +24,8 @@ namespace Microsoft.WindowsAzure.Management.Websites.Services.WebEntities
             { "North Europe", "northeuropewebspace" },
             { "West Europe", "westeuropewebspace" },
             { "East US", "eastuswebspace" },
-            { "West US", "westuswebspace" } };
+            { "West US", "westuswebspace" },
+            { "East Asia", "eastasiawebspace" }};
     }
 
     [DataContract(Name = "Status", Namespace = UriElements.ServiceNamespace)]
