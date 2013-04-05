@@ -105,7 +105,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.Common
             T item = default(T);
 
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
-            using (Stream s = new FileStream(fileName, FileMode.Open))
+            using (Stream s = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
                 try { item = (T)xmlSerializer.Deserialize(s); }
                 catch

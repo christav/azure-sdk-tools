@@ -126,6 +126,7 @@ namespace Microsoft.WindowsAzure.Management.Utilities.Common
     public static class ApiConstants
     {
         public static string DefaultApiVersion = "2011-03-01";
+        public static string ResourceRegistrationApiVersion = "2012-08-01";
 
         public const string VersionHeaderName = "x-ms-version";
         public const string RequestHeaderName = "x-ms-request-id";
@@ -148,5 +149,14 @@ namespace Microsoft.WindowsAzure.Management.Utilities.Common
         public static ProductInfoHeaderValue UserAgentValue = new ProductInfoHeaderValue(
             "WindowsAzurePowershell",
             "v0.6.12");
+    }
+
+    public static class HttpConstants
+    {
+        public static readonly MediaTypeWithQualityHeaderValue JsonMediaType =
+            MediaTypeWithQualityHeaderValue.Parse("application/json");
+
+        public static readonly MediaTypeWithQualityHeaderValue XmlMediaType =
+            MediaTypeWithQualityHeaderValue.Parse("application/xml");
     }
 }
