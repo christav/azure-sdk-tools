@@ -30,7 +30,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.ServiceBus
         [TestInitialize]
         public void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
             new FileSystemHelper(this).CreateAzureSdkDirectoryAndImportPublishSettings();
         }
 

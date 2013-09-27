@@ -29,7 +29,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.CloudService.Utilities
         public void SetupTest()
         {
             GlobalPathInfo.GlobalSettingsDirectory = Data.AzureSdkAppDir;
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
         }
 
         [TestMethod]

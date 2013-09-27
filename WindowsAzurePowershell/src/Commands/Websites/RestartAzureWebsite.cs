@@ -19,7 +19,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
 
 
     [Cmdlet(VerbsLifecycle.Restart, "AzureWebsite"), OutputType(typeof(bool))]
-    public class RestartAzureWebsiteCommand : WebsiteClientBaseCmdlet
+    public class RestartAzureWebsiteCommand : WebsiteContextBaseCmdlet
     {
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru { get; set; }

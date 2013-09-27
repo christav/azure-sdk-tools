@@ -165,8 +165,8 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.IaaS
 
         protected void ValidateParameters()
         {
-            var currentSubscription = this.GetCurrentSubscription();
-            if ((currentSubscription == null || currentSubscription.CurrentStorageAccount == null) && this.MediaLocation == null && string.Compare(this.ParameterSetName, "CreateNew", StringComparison.OrdinalIgnoreCase) == 0)
+            var currentSubscription = WindowsAzureProfile.Instance.CurrentSubscription;
+            if ((currentSubscription == null || currentSubscription.CurrentStorageAccountName == null) && this.MediaLocation == null && string.Compare(this.ParameterSetName, "CreateNew", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 throw new ArgumentException(Resources.MediaLocationOrDefaultStorageAccountMustBeSpecified);
             }

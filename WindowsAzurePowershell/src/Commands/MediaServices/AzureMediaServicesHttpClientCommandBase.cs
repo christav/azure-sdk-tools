@@ -17,37 +17,8 @@ namespace Microsoft.WindowsAzure.Commands.MediaServices
     using System;
     using Utilities.Common;
 
-    public class AzureMediaServicesHttpClientCommandBase : CmdletBase
+    public class AzureMediaServicesHttpClientCommandBase : CmdletWithSubscriptionBase
     {
-        private SubscriptionData _currentSubscription;
-
-        /// <summary>
-        ///     Gets or sets the current subscription.
-        /// </summary>
-        /// <value>
-        ///     The current subscription.
-        /// </value>
-        public SubscriptionData CurrentSubscription
-        {
-            get
-            {
-                if (_currentSubscription == null)
-                {
-                    _currentSubscription = this.GetCurrentSubscription();
-                }
-
-                return _currentSubscription;
-            }
-
-            set
-            {
-                if (_currentSubscription != value)
-                {
-                    _currentSubscription = value;
-                }
-            }
-        }
-
         protected virtual void OnProcessRecord()
         {
             // Intentionally left blank

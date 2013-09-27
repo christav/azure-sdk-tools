@@ -286,11 +286,11 @@ namespace Microsoft.WindowsAzure.Commands.Storage.Common.Cmdlet
 
             if (string.IsNullOrEmpty(azureEnvironmentName))
             {
-                azureEnvironment = GlobalSettingsManager.Instance.DefaultEnvironment;
+                azureEnvironment = WindowsAzureProfile.Instance.CurrentEnvironment;
             }
             else
             {
-                azureEnvironment = GlobalSettingsManager.Instance.GetEnvironment(azureEnvironmentName);
+                azureEnvironment = WindowsAzureProfile.Instance.Environments[azureEnvironmentName];
             }
 
             Uri blobEndPoint = azureEnvironment.GetStorageBlobEndpoint(storageAccountName, useHttps);

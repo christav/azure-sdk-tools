@@ -15,6 +15,7 @@
 namespace Microsoft.WindowsAzure.Commands.Utilities.CloudService
 {
     using System;
+    using System.Linq;
     using Common;
     using Microsoft.WindowsAzure.Commands.Utilities.Properties;
 
@@ -58,8 +59,17 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.CloudService
 
             if (!string.IsNullOrEmpty(settings.Subscription))
             {
-                GlobalSettingsManager globalSettingsManager = GlobalSettingsManager.Load(GlobalPathInfo.GlobalSettingsDirectory);
-                SubscriptionId = globalSettingsManager.GetSubscriptionId(settings.Subscription);
+                try
+                {
+                    SubscriptionId =
+                        WindowsAzureProfile.Instance.Subscriptions.Where(s => s.Name == settings.Subscription)
+                            .Select(s => s.SubscriptionId)
+                            .First();
+                }
+                catch (Exception)
+                {
+                    throw new ArgumentException(Resources.SubscriptionIdNotFoundMessage, settings.Subscription);
+                }
             }
             else
             {

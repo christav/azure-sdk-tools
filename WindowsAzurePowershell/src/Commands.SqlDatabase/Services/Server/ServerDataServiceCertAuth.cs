@@ -119,28 +119,28 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Services.Server
         /// which connects to the specified server using the specified subscription credentials.
         /// </summary>
         /// <param name="serverName">The name of the server to connect to</param>
-        /// <param name="subscriptionData">The information used to connect and authenticate</param>
+        /// <param name="subscription">The information used to connect and authenticate</param>
         /// <returns>An instance of <see cref="ServerDataServiceCertAuth"/> class.</returns>
         public static ServerDataServiceCertAuth Create(
             string serverName,
-            SubscriptionData subscriptionData)
+            WindowsAzureSubscription subscription)
         {
             if (string.IsNullOrEmpty(serverName))
             {
                 throw new ArgumentException("serverName");
             }
 
-            if (subscriptionData == null)
+            if (subscription == null)
             {
-                throw new ArgumentNullException("subscriptionData");
+                throw new ArgumentNullException("subscription");
             }
 
             // Create a new ServerDataServiceCertAuth object to be used
             return new ServerDataServiceCertAuth(
-                new Uri(subscriptionData.ServiceEndpoint),
-                subscriptionData.SubscriptionId,
+                subscription.ServiceEndpoint,
+                subscription.SubscriptionId,
                 serverName,
-                subscriptionData.Certificate);
+                subscription.Certificate);
         }
 
         #region Helper functions

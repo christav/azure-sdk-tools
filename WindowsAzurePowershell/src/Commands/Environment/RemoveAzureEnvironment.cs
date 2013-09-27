@@ -14,10 +14,12 @@
 
 namespace Microsoft.WindowsAzure.Commands.Subscription
 {
+    using System;
     using System.Collections.Generic;
     using System.Management.Automation;
     using System.Security.Permissions;
     using Commands.Utilities.Common;
+    using Utilities.Properties;
 
     /// <summary>
     /// Removes a Windows Azure environment.
@@ -35,7 +37,14 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         public override void ExecuteCmdlet()
         {
-            GlobalSettingsManager.Instance.RemoveEnvironment(Name);
+            try
+            {
+                WindowsAzureProfile.Instance.RemoveEnvironment(Name);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new KeyNotFoundException(string.Format(Resources.EnvironmentNotFound, Name), ex);
+            }
         }
     }
 }

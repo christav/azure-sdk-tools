@@ -27,7 +27,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.Utilities.Websites
         [TestInitialize]
         public virtual void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
             new FileSystemHelper(this).CreateAzureSdkDirectoryAndImportPublishSettings();
         }
 

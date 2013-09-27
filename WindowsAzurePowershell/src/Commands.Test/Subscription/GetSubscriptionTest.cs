@@ -14,113 +14,89 @@
 
 namespace Microsoft.WindowsAzure.Commands.Test.Subscription
 {
-    using System.Collections.Generic;
     using System.Linq;
-    using Commands.Utilities.Common;
     using Commands.Subscription;
+    using Commands.Utilities.Common;
+    using Moq;
     using Utilities.Common;
     using VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class GetSubscriptionTest
     {
+        private WindowsAzureProfile profile;
+        private MockCommandRuntime mockCommandRuntime;
+        private GetAzureSubscriptionCommand cmdlet;
+
         [TestInitialize]
-        public void SetupTest()
+        public void Setup()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
+            profile = new WindowsAzureProfile(new Mock<IProfileStore>().Object);
+            profile.ImportPublishSettings(Data.ValidPublishSettings.First());
 
-            GlobalPathInfo.GlobalSettingsDirectory = Data.AzureAppDir;
+            mockCommandRuntime = new MockCommandRuntime();
+
+            cmdlet = new GetAzureSubscriptionCommand
+            {
+                Profile = profile,
+                CommandRuntime = mockCommandRuntime
+            };
         }
 
         [TestMethod]
-        public void TestGetCurrentSubscriptionByName()
+        public void GetsAllSubscriptionsByNameWhenNameIsBlank()
         {
-            var globalSettingsManager = GlobalSettingsManager.CreateFromPublishSettings(GlobalPathInfo.GlobalSettingsDirectory, null, Data.ValidPublishSettings.First());
+            cmdlet.SubscriptionName = null;
+        
+            cmdlet.GetByName();
 
-            var importSubscriptionCommand = new ImportAzurePublishSettingsCommand();
-            importSubscriptionCommand.ImportSubscriptionFile(
-                Data.ValidPublishSettings.First(),
-                null);
-
-            var currentSubscription = importSubscriptionCommand.GetCurrentSubscription();
-            Assert.AreEqual(currentSubscription.SubscriptionName, Data.Subscription1);
-            Assert.IsTrue(currentSubscription.IsDefault);
-
-            // Test the get for all subscription (null name)
-            var getSubscriptionCommand = new GetSubscriptionCommandStub();
-            getSubscriptionCommand.GetSubscriptionProcess("ByName", null, null);
-
-            Assert.AreEqual(6, getSubscriptionCommand.Messages.Count);
-
-            // Test the get for a specific susbcription
-            getSubscriptionCommand = new GetSubscriptionCommandStub();
-            getSubscriptionCommand.GetSubscriptionProcess("ByName", currentSubscription.SubscriptionName, null);
-
-            Assert.AreEqual(1, getSubscriptionCommand.Messages.Count);
-            Assert.AreEqual(currentSubscription.SubscriptionName, getSubscriptionCommand.Messages.First().SubscriptionName);
-            Assert.AreEqual(currentSubscription.SubscriptionId, getSubscriptionCommand.Messages.First().SubscriptionId);
-
-            globalSettingsManager.DeleteGlobalSettingsManager();
+            Assert.AreEqual(6, mockCommandRuntime.OutputPipeline.Count);
         }
 
         [TestMethod]
-        public void TestGetCurrentSubscriptionCurrent()
+        public void CanGetSubscriptionByName()
         {
-            var globalSettingsManager = GlobalSettingsManager.CreateFromPublishSettings(GlobalPathInfo.GlobalSettingsDirectory, null, Data.ValidPublishSettings.First());
+            var expected = profile.CurrentSubscription;
+            cmdlet.SubscriptionName = expected.Name;
 
-            var importSubscriptionCommand = new ImportAzurePublishSettingsCommand();
-            importSubscriptionCommand.ImportSubscriptionFile(
-                Data.ValidPublishSettings.First(),
-                null);
+            cmdlet.GetByName();
 
-            var currentSubscription = importSubscriptionCommand.GetCurrentSubscription();
-            Assert.AreEqual(currentSubscription.SubscriptionName, Data.Subscription1);
-            Assert.IsTrue(currentSubscription.IsDefault);
-
-            // Test the get for the current subscription
-            var getSubscriptionCommand = new GetSubscriptionCommandStub();
-            getSubscriptionCommand.GetSubscriptionProcess("Current", null, null);
-
-            Assert.AreEqual(1, getSubscriptionCommand.Messages.Count);
-            Assert.AreEqual(currentSubscription.SubscriptionName, getSubscriptionCommand.Messages.First().SubscriptionName);
-            Assert.AreEqual(currentSubscription.SubscriptionId, getSubscriptionCommand.Messages.First().SubscriptionId);
-
-            globalSettingsManager.DeleteGlobalSettingsManager();
+            Assert.AreEqual(1, mockCommandRuntime.OutputPipeline.Count);
+            Assert.IsInstanceOfType(mockCommandRuntime.OutputPipeline[0], typeof (SubscriptionData));
+            Assert.AreEqual(expected.Name, ((SubscriptionData) mockCommandRuntime.OutputPipeline[0]).SubscriptionName);
+            Assert.AreEqual(expected.SubscriptionId,
+                ((SubscriptionData) (mockCommandRuntime.OutputPipeline[0])).SubscriptionId);
         }
 
         [TestMethod]
-        public void TestGetCurrentSubscriptionDefault()
+        public void CanGetCurrentSubscription()
         {
-            var globalSettingsManager = GlobalSettingsManager.CreateFromPublishSettings(GlobalPathInfo.GlobalSettingsDirectory, null, Data.ValidPublishSettings.First());
+            // Select a subscription that is not the default
+            profile.CurrentSubscription = profile.Subscriptions.First(s => !s.IsDefault);
 
-            var importSubscriptionCommand = new ImportAzurePublishSettingsCommand();
-            importSubscriptionCommand.ImportSubscriptionFile(
-                Data.ValidPublishSettings.First(),
-                null);
+            cmdlet.GetCurrent();
 
-            var currentSubscription = importSubscriptionCommand.GetCurrentSubscription();
-            Assert.AreEqual(currentSubscription.SubscriptionName, Data.Subscription1);
-            Assert.IsTrue(currentSubscription.IsDefault);
-
-            // Test the get for the current subscription
-            var getSubscriptionCommand = new GetSubscriptionCommandStub();
-            getSubscriptionCommand.GetSubscriptionProcess("Default", null, null);
-
-            Assert.AreEqual(1, getSubscriptionCommand.Messages.Count);
-            Assert.AreEqual(currentSubscription.SubscriptionName, getSubscriptionCommand.Messages.First().SubscriptionName);
-            Assert.AreEqual(currentSubscription.SubscriptionId, getSubscriptionCommand.Messages.First().SubscriptionId);
-
-            globalSettingsManager.DeleteGlobalSettingsManager();
+            Assert.AreEqual(1, mockCommandRuntime.OutputPipeline.Count);
+            Assert.AreEqual(profile.CurrentSubscription.Name, 
+                ((SubscriptionData)mockCommandRuntime.OutputPipeline[0]).SubscriptionName);
+            Assert.AreEqual(profile.CurrentSubscription.SubscriptionId,
+                ((SubscriptionData)(mockCommandRuntime.OutputPipeline[0])).SubscriptionId);
         }
-    }
 
-    public class GetSubscriptionCommandStub : GetAzureSubscriptionCommand
-    {
-        public readonly IList<SubscriptionData> Messages = new List<SubscriptionData>();
-
-        protected override void WriteSubscription(SubscriptionData subscription)
+        [TestMethod]
+        public void CanGetDefaultSubscription()
         {
-            Messages.Add(subscription);
+            // Select a subscription that is not the default
+            profile.CurrentSubscription = profile.Subscriptions.First(s => !s.IsDefault);
+
+            cmdlet.GetDefault();
+
+            Assert.AreEqual(1, mockCommandRuntime.OutputPipeline.Count);
+            Assert.AreEqual(profile.DefaultSubscription.Name,
+                ((SubscriptionData)mockCommandRuntime.OutputPipeline[0]).SubscriptionName);
+            Assert.AreEqual(profile.DefaultSubscription.SubscriptionId,
+                ((SubscriptionData)(mockCommandRuntime.OutputPipeline[0])).SubscriptionId);
+            
         }
     }
 }

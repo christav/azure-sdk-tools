@@ -15,64 +15,94 @@
 namespace Microsoft.WindowsAzure.Commands.Subscription
 {
     using System;
+    using System.Linq;
     using System.Management.Automation;
-    using Commands.Utilities.Common;
+    using Utilities.Common;
+    using Utilities.Properties;
 
-    /// <summary>
-    /// Selects a subscription from the previously imported ones.
-    /// </summary>
-    [Cmdlet(VerbsCommon.Select, "AzureSubscription", DefaultParameterSetName = "Set"), OutputType(typeof(bool))]
-    public class SelectAzureSubscriptionCommand : PSCmdlet
+    [Cmdlet(VerbsCommon.Select, "AzureSubscription", DefaultParameterSetName = "Current")]
+    [OutputType(typeof(bool))]
+    public class SelectAzureSubscriptionCommand : CmdletWithSubscriptionBase
     {
-        [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "Name of the subscription.", ParameterSetName = "Set")]
+        [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "Current", HelpMessage = "Name of subscription to select")]
+        [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "Default", HelpMessage = "Name of subscription to select")]
         [ValidateNotNullOrEmpty]
         public string SubscriptionName { get; set; }
 
-        [Parameter(Position = 1, Mandatory = true, HelpMessage = "Specify to clear the current selection.", ParameterSetName = "Clear")]
-        [ValidateNotNullOrEmpty]
-        public SwitchParameter Clear { get; set; }
+        [Parameter(Mandatory = false, ParameterSetName = "Current", HelpMessage = "Switch to set the chosen subscription as the current one")]
+        public SwitchParameter Current { get; set; }
 
-        [Parameter(Position = 2, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Subscription data file.")]
-        [ValidateNotNullOrEmpty]
-        public string SubscriptionDataFile { get; set; }
+        [Parameter(Mandatory = true, ParameterSetName = "Default", HelpMessage = "Switch to set the chosen subscription as the default one")]
+        public SwitchParameter Default { get; set; }
 
-        [Parameter(Position = 3, Mandatory = false)]
+        [Parameter(Mandatory = true, ParameterSetName = "NoCurrent", HelpMessage = "Switch to clear the current subscription")]
+        public SwitchParameter NoCurrent { get; set; }
+
+        [Parameter(Mandatory = true, ParameterSetName = "NoDefault", HelpMessage = "Switch to clear the default subscription")]
+        public SwitchParameter NoDefault { get; set; }
+
+        [Parameter(Mandatory = false)]
         public SwitchParameter PassThru { get; set; }
 
-        internal void SelectSubscriptionProcess(string parameterSetName, string subscriptionName, string subscriptionsDataFile)
+        public override void ExecuteCmdlet()
         {
-            switch (parameterSetName)
+            switch (ParameterSetName)
             {
-                case "Set":
-                    this.SetCurrentSubscription(
-                        subscriptionName,
-                        subscriptionsDataFile);
+                case "Current":
+                    SetCurrent();
                     break;
-                case "Clear":
-                    this.ClearCurrentSubscription();
+
+                case "Default":
+                    SetDefault();
                     break;
+
+                case "NoCurrent":
+                    ClearCurrent();
+                    break;
+
+                case "NoDefault":
+                    ClearDefault();
+                    break;
+            }
+
+            if (PassThru.IsPresent)
+            {
+                WriteObject(true);
             }
         }
 
-        protected override void ProcessRecord()
+        public void SetCurrent()
         {
-            try
-            {
-                base.ProcessRecord();
-                SelectSubscriptionProcess(
-                    ParameterSetName,
-                    SubscriptionName,
-                    this.ResolvePath(SubscriptionDataFile));
+            Profile.CurrentSubscription = FindNamedSubscription();
+        }
 
-                if (PassThru.IsPresent)
-                {
-                    WriteObject(true);
-                }
-            }
-            catch (Exception exception)
+        public void SetDefault()
+        {
+            var newDefault = FindNamedSubscription();
+            newDefault.IsDefault = true;
+            Profile.UpdateSubscription(newDefault);
+        }
+
+        public void ClearCurrent()
+        {
+            Profile.CurrentSubscription = null;
+        }
+
+        public void ClearDefault()
+        {
+            var defaultSubscription = Profile.DefaultSubscription;
+            defaultSubscription.IsDefault = false;
+            Profile.UpdateSubscription(defaultSubscription);
+        }
+
+        private WindowsAzureSubscription FindNamedSubscription()
+        {
+            var subscription = Profile.Subscriptions.FirstOrDefault(s => s.Name == SubscriptionName);
+            if (subscription == null)
             {
-                WriteError(new ErrorRecord(exception, string.Empty, ErrorCategory.CloseError, null));
+                throw new Exception(string.Format(Resources.InvalidSubscription, SubscriptionName));
             }
+            return subscription;
         }
     }
 }

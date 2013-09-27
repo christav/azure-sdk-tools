@@ -26,22 +26,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
     [TestClass]
     public class GetAzureEnvironmentTests : TestBase
     {
-        private FileSystemHelper helper;
-
-        [TestInitialize]
-        public void SetupTest()
-        {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
-            helper = new FileSystemHelper(this);
-            helper.CreateAzureSdkDirectoryAndImportPublishSettings();
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            helper.Dispose();
-        }
-
         [TestMethod]
         public void GetsAzureEnvironments()
         {

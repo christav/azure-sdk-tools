@@ -940,16 +940,9 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Common
             return string.IsNullOrEmpty(newValue) ? oldValue : newValue;
         }
 
-        public static string CominePath(params string[] paths)
+        public static string CombinePath(params string[] paths)
         {
-            StringBuilder final = new StringBuilder();
-
-            for (int i = 0; i < paths.Length - 1; i++)
-            {
-                final.Append(paths[i]).Append("\\");
-            }
-
-            return final.Append(paths[paths.Length - 1]).ToString();
+            return Path.Combine(paths);
         }
     }
 }

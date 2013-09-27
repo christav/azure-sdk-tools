@@ -21,7 +21,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
     using Utilities.Websites.Services.DeploymentEntities;
 
     [Cmdlet(VerbsLifecycle.Enable, "AzureWebsiteApplicationDiagnostic"), OutputType(typeof(bool))]
-    public class EnableAzureWebsiteApplicationDiagnosticCommand : WebsiteClientBaseCmdlet
+    public class EnableAzureWebsiteApplicationDiagnosticCommand : WebsiteContextBaseCmdlet
     {
         private const string FileParameterSetName = "FileParameterSet";
 
@@ -46,7 +46,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
 
         public override void ExecuteCmdlet()
         {
-            Dictionary<DiagnosticProperties, object> properties = new Dictionary<DiagnosticProperties, object>();
+            var properties = new Dictionary<DiagnosticProperties, object>();
             properties[DiagnosticProperties.LogLevel] = LogLevel;
 
             if (File.IsPresent)
@@ -56,7 +56,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
             else if (Storage.IsPresent)
             {
                 string storageName = string.IsNullOrEmpty(StorageAccountName) ?
-                    CurrentSubscription.CurrentStorageAccount : StorageAccountName;
+                    CurrentSubscription.CurrentStorageAccountName : StorageAccountName;
                 properties[DiagnosticProperties.StorageAccountName] = storageName;
                 WebsitesClient.EnableApplicationDiagnostic(Name, WebsiteDiagnosticOutput.StorageTable, properties);
             }

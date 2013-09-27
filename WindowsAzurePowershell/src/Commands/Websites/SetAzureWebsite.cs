@@ -25,7 +25,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
     /// Sets an azure website properties.
     /// </summary>
     [Cmdlet(VerbsCommon.Set, "AzureWebsite"), OutputType(typeof(bool))]
-    public class SetAzureWebsiteCommand : WebsiteClientBaseCmdlet
+    public class SetAzureWebsiteCommand : WebsiteContextBaseCmdlet
     {
         [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Number of workers.")]
         [ValidateNotNullOrEmpty]

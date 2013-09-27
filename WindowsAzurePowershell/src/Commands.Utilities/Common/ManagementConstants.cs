@@ -116,6 +116,10 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Common
 
         public const string ChinaManagementPortalUrl = "http://go.microsoft.com/fwlink/?LinkId=301902";
 
+        public const string AzureStorageEndpointSuffix = "core.windows.net";
+
+        public const string ChinaStorageEndpointSuffix = "core.chinacloudapi.cn";
+
         public const string AzureStorageBlobEndpointFormat = "{0}://{1}.blob.core.windows.net/";
 
         public const string AzureStorageQueueEndpointFormat = "{0}://{1}.queue.core.windows.net/";

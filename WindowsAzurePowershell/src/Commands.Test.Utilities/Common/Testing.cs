@@ -83,6 +83,23 @@ namespace Microsoft.WindowsAzure.Commands.Test.Utilities.Common
             }
         }
         
+        public static void AssertThrows<TException, TResult>(Func<TResult> action, string expectedMessage)
+            where TException : Exception
+        {
+            Debug.Assert(action != null);
+
+            try
+            {
+                action();
+                Assert.Fail("No exception was thrown!");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(TException));
+                Assert.AreEqual(expectedMessage, ex.Message);
+            }
+        }
+
         /// <summary>
         /// Ensure an action throws a specific type of Exception.
         /// </summary>

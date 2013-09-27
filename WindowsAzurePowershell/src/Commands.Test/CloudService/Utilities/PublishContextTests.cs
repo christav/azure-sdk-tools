@@ -40,13 +40,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.CloudService.Utilities
 
         private static ServiceSettings settings;
 
-        private string serviceName;
-
         private string rootPath = "serviceRootPath";
-
-        private MockCommandRuntime mockCommandRuntime;
-
-        private ImportAzurePublishSettingsCommand importCmdlet;
 
         /// <summary>
         /// When running this test double check that the certificate used in Azure.PublishSettings has not expired.
@@ -54,25 +48,20 @@ namespace Microsoft.WindowsAzure.Commands.Test.CloudService.Utilities
         [TestInitialize()]
         public void TestInitialize()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
-
-            serviceName = Path.GetRandomFileName();
             GlobalPathInfo.GlobalSettingsDirectory = Data.AzureSdkAppDir;
             service = new AzureServiceWrapper(Directory.GetCurrentDirectory(), Path.GetRandomFileName(), null);
             service.CreateVirtualCloudPackage();
             packagePath = service.Paths.CloudPackage;
             configPath = service.Paths.CloudConfiguration;
             settings = ServiceSettingsTestData.Instance.Data[ServiceSettingsState.Default];
-            mockCommandRuntime = new MockCommandRuntime();
-            importCmdlet = new ImportAzurePublishSettingsCommand();
-            importCmdlet.CommandRuntime = mockCommandRuntime;
-            importCmdlet.ImportSubscriptionFile(Data.ValidPublishSettings.First(), null);
-            importCmdlet.SubscriptionClient = CreateMockSubscriptionClient();
+            WindowsAzureProfile.Instance = new WindowsAzureProfile(new Mock<IProfileStore>().Object);
+            WindowsAzureProfile.Instance.ImportPublishSettings(Data.ValidPublishSettings.First());
         }
 
         [TestCleanup()]
         public void TestCleanup()
         {
+            WindowsAzureProfile.ResetInstance();
             if (Directory.Exists(Data.AzureSdkAppDir))
             {
                 new RemoveAzurePublishSettingsCommand().RemovePublishSettingsProcess(Data.AzureSdkAppDir);

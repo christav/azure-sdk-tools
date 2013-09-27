@@ -55,7 +55,7 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.IaaS
         {
             base.ExecuteCommand();
 
-            SubscriptionData currentSubscription = this.GetCurrentSubscription();
+            WindowsAzureSubscription currentSubscription = CurrentSubscription;
             if (CurrentDeployment == null)
             {
                 return;
@@ -66,7 +66,7 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.IaaS
             {
                 if (datadisk.MediaLink == null && string.IsNullOrEmpty(datadisk.DiskName))
                 {
-                    CloudStorageAccount currentStorage = currentSubscription.GetCurrentStorageAccount();
+                    CloudStorageAccount currentStorage = currentSubscription.GetCloudStorageAccount();
                     if (currentStorage == null)
                     {
                         throw new ArgumentException(Resources.CurrentStorageAccountIsNotAccessible);

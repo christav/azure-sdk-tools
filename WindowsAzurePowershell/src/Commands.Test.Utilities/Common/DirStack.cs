@@ -14,32 +14,26 @@
 
 namespace Microsoft.WindowsAzure.Commands.Test.Utilities.Common
 {
-    using System.Collections.Generic;
-    using System.Management.Automation;
-    using Commands.Utilities.Common;
+    using System;
+    using System.IO;
 
-    public class InMemorySessionManager : ISessionManager
+    /// <summary>
+    /// A little helper object to do the equivalent of
+    /// pushd/popd in C# code
+    /// </summary>
+    public sealed class DirStack : IDisposable
     {
-        private readonly IDictionary<string, object> _variables = new Dictionary<string, object>();
+        private readonly string originalDirectory;
 
-        public object GetVariable(PSCmdlet cmdlet, string name)
+        public DirStack(string newDir)
         {
-            if (_variables.ContainsKey(name))
-            {
-                return _variables[name];   
-            }
-
-            return null;
+            originalDirectory = Directory.GetCurrentDirectory();
+            Directory.SetCurrentDirectory(newDir);
         }
 
-        public void SetVariable(PSCmdlet cmdlet, string name, object value)
+        public void Dispose()
         {
-            _variables[name] = value;
-        }
-
-        public void ClearVariable(PSCmdlet cmdlet, string name)
-        {
-            _variables.Remove(name);
+            Directory.SetCurrentDirectory(originalDirectory);
         }
     }
 }

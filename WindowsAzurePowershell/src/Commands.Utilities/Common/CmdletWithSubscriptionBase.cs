@@ -21,38 +21,37 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Common
 
     public abstract class CmdletWithSubscriptionBase : CmdletBase
     {
-        private SubscriptionData _currentSubscription;
-
-        public SubscriptionData CurrentSubscription
-        {
-            get
-            {
-                if (_currentSubscription == null)
-                {
-                    _currentSubscription = this.GetCurrentSubscription();
-                }
-
-                return _currentSubscription;
-            }
-
-            set
-            {
-                if (_currentSubscription != value)
-                {
-                    _currentSubscription = value;
-
-                    OnCurrentSubscriptionUpdated();
-                }
-            }
-        }
-
         /// <summary>
         /// Override this method if you need to do processing
         /// when the current subscription changes.
         /// </summary>
         protected virtual void OnCurrentSubscriptionUpdated()
         {
-            
+
+        }
+
+        private WindowsAzureProfile profile;
+
+        public WindowsAzureProfile Profile
+        {
+            get { return profile ?? WindowsAzureProfile.Instance; }
+
+            set { profile = value; }
+        }
+
+        private WindowsAzureSubscription currentSubscription;
+
+        public WindowsAzureSubscription CurrentSubscription
+        {
+            get { return currentSubscription ?? Profile.CurrentSubscription; }
+            set
+            {
+                if (currentSubscription != value)
+                {
+                    currentSubscription = value;
+                    OnCurrentSubscriptionUpdated();
+                }
+            }
         }
     }
 }

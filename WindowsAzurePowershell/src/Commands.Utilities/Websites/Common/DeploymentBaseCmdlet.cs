@@ -21,7 +21,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Websites.Common
     using Services;
     using Services.WebEntities;
 
-    public abstract class DeploymentBaseCmdlet : WebsiteClientBaseCmdlet
+    public abstract class DeploymentBaseCmdlet : WebsiteContextBaseCmdlet
     {
         protected IDeploymentServiceManagement DeploymentChannel { get; set; }
 

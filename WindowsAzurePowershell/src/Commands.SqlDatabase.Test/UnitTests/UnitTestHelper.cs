@@ -60,11 +60,11 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Test.UnitTests
             }
         }
 
-        public static SubscriptionData CreateUnitTestSubscription()
+        public static WindowsAzureSubscription CreateUnitTestSubscription()
         {
-            return new SubscriptionData()
+            return new WindowsAzureSubscription
             {
-                SubscriptionName = "TestSubscription",
+                Name = "TestSubscription",
                 SubscriptionId = "00000000-0000-0000-0000-000000000000",
                 Certificate = new X509Certificate2()
             };

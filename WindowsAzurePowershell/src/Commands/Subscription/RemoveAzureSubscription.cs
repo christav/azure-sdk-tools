@@ -25,15 +25,11 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
     /// Removes a previously imported subscription.
     /// </summary>
     [Cmdlet(VerbsCommon.Remove, "AzureSubscription", SupportsShouldProcess = true), OutputType(typeof(bool))]
-    public class RemoveAzureSubscriptionCommand : CmdletBase
+    public class RemoveAzureSubscriptionCommand : CmdletWithSubscriptionBase
     {
         [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "Name of the subscription.")]
         [ValidateNotNullOrEmpty]
         public string SubscriptionName { get; set; }
-
-        [Parameter(Position = 1, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Subscription data file.")]
-        [ValidateNotNullOrEmpty]
-        public string SubscriptionDataFile { get; set; }
 
         [Parameter(Position = 2, HelpMessage = "Do not confirm deletion of subscription")]
         public SwitchParameter Force { get; set; }
@@ -41,42 +37,24 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
         [Parameter(Position = 3, Mandatory = false)]
         public SwitchParameter PassThru { get; set; }
 
-        public void RemoveSubscriptionProcess(string subscriptionName, string subscriptionsDataFile)
+        public void RemoveSubscriptionProcess()
         {
-            // Import subscriptions from subscriptions file
-            var globalSettingsManager = GlobalSettingsManager.Load(
-                GlobalPathInfo.GlobalSettingsDirectory,
-                this.ResolvePath(subscriptionsDataFile));
-
-            if (globalSettingsManager.Subscriptions.ContainsKey(subscriptionName))
+            var subscription = Profile.Subscriptions.FirstOrDefault(s => s.Name == SubscriptionName);
+            if (subscription != null)
             {
-                var subscription = globalSettingsManager.Subscriptions[subscriptionName];
-
                 // Warn the user if the removed subscription is the default one.
                 if (subscription.IsDefault)
                 {
                     WriteWarning(Resources.RemoveDefaultSubscription);
-                    // Change default to another one
-                    var newSubscriptionDefault = globalSettingsManager.Subscriptions.Values.FirstOrDefault(s => !s.SubscriptionId.Equals(subscription.SubscriptionId));
-                    if (newSubscriptionDefault != null)
-                    {
-                        newSubscriptionDefault.IsDefault = true;
-                    }
                 }
 
                 // Warn the user if the removed subscription is the current one.
-                SubscriptionData currentSubscription = this.GetCurrentSubscription();
-                if (currentSubscription != null && currentSubscription.SubscriptionId.Equals(subscription.SubscriptionId))
+                if (subscription == Profile.CurrentSubscription)
                 {
                     WriteWarning(Resources.RemoveCurrentSubscription);
-
-                    // Clear current subscription to another one
-                    this.ClearCurrentSubscription();
                 }
 
-                globalSettingsManager.Subscriptions.Remove(subscriptionName);
-                globalSettingsManager.SaveSubscriptions();
-
+                Profile.RemoveSubscription(subscription);
                 if (PassThru.IsPresent)
                 {
                     WriteObject(true);
@@ -84,7 +62,7 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
             }
             else
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidSubscription, subscriptionName));
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.InvalidSubscription, SubscriptionName));
             }
         }
 
@@ -95,7 +73,7 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
                 string.Format(Resources.RemoveSubscriptionConfirmation, SubscriptionName),
                 Resources.RemoveSubscriptionMessage,
                 SubscriptionName,
-                () => RemoveSubscriptionProcess(SubscriptionName, this.ResolvePath(SubscriptionDataFile)));
+                RemoveSubscriptionProcess);
         }
     }
 }

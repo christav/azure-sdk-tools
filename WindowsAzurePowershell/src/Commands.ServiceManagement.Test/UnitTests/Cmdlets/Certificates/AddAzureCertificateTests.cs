@@ -31,7 +31,6 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.Test.UnitTests.Cmdle
         [TestInitialize]
         public void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
             files = new FileSystemHelper(this);
             //files.CreateAzureSdkDirectoryAndImportPublishSettings();
         }

@@ -40,7 +40,17 @@ namespace Microsoft.WindowsAzure.Commands.Websites
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         public override void ExecuteCmdlet()
         {
-            string managementPortalUrl = GlobalSettingsManager.Instance.GetManagementPortalUrl(Environment, Realm);
+            WindowsAzureEnvironment environment;
+            if (string.IsNullOrEmpty(Environment))
+            {
+                environment = WindowsAzureProfile.Instance.CurrentEnvironment;
+            }
+            else
+            {
+                environment = WindowsAzureProfile.Instance.Environments[Environment];
+            }
+
+            string managementPortalUrl = environment.ManagementPortalUrlWithRealm(Realm);
 
             if (!string.IsNullOrEmpty(Name))
             {

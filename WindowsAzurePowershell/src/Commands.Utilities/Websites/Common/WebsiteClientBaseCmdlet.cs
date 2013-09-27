@@ -14,7 +14,7 @@
 
 namespace Microsoft.WindowsAzure.Commands.Utilities.Websites.Common
 {
-    public abstract class WebsiteClientBaseCmdlet : WebsiteContextBaseCmdlet
+    public abstract class WebsiteClientBaseCmdlet : WebsitesBaseCmdlet
     {
         private IWebsitesClient websitesClient;
 

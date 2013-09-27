@@ -15,199 +15,106 @@
 namespace Microsoft.WindowsAzure.Commands.Subscription
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Management.Automation;
-    using System.Net;
-    using System.Net.Security;
     using System.Security.Permissions;
-    using System.Threading.Tasks;
-    using Commands.Utilities.Common;
-    using Commands.Utilities.Properties;
-    using Commands.Utilities.Subscription;
-    using Commands.Utilities.Subscription.Contract;
+    using Utilities.Common;
+    using Utilities.Properties;
 
-    /// <summary>
-    /// Imports publish profiles.
-    /// </summary>
-    [Cmdlet(VerbsData.Import, "AzurePublishSettingsFile"), OutputType(typeof (string))]
-    public class ImportAzurePublishSettingsCommand : CmdletBase, IModuleAssemblyInitializer
+    [Cmdlet(VerbsData.Import, "AzurePublishSettingsFile")]
+    public class ImportAzurePublishSettingsCommand : CmdletWithSubscriptionBase
     {
         [Parameter(Position = 0, Mandatory = false, ValueFromPipelineByPropertyName = true,
             HelpMessage = "Path to the publish settings file.")]
-        [ValidateNotNullOrEmpty]
         public string PublishSettingsFile { get; set; }
-
-        [Parameter(Position = 1, Mandatory = false, ValueFromPipelineByPropertyName = true,
-            HelpMessage = "Path to the subscription data output file.")]
-        public string SubscriptionDataFile { get; set; }
-
-        public ISubscriptionClient SubscriptionClient { get; set; }
-
-        private ISubscriptionClient GetSubscriptionClient(SubscriptionData subscription)
-        {
-            return SubscriptionClient ?? (SubscriptionClient = new SubscriptionClient(subscription));
-        }
-
-        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
-        internal SubscriptionData ImportSubscriptionFile(string publishSettingsFile, string subscriptionsDataFile)
-        {
-            GlobalSettingsManager globalSettingsManager = CreateGlobalSettingsManager(subscriptionsDataFile, publishSettingsFile);
-            return SetCurrentAndDefaultSubscriptions(globalSettingsManager, subscriptionsDataFile);
-        }
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         public override void ExecuteCmdlet()
         {
-            string publishSettingsFile = this.TryResolvePath(PublishSettingsFile);
-            string subscriptionDataFile = this.TryResolvePath(SubscriptionDataFile);
-
-            if (PathIsDirectory(publishSettingsFile))
+            if (IsDirectory())
             {
-                ImportDirectory(subscriptionDataFile, DirectoryFromPublishSettingsPath(publishSettingsFile));
+                ImportDirectory();
             }
             else
             {
-                ImportSingleFile(subscriptionDataFile, publishSettingsFile);
+                ImportFile();
             }
         }
 
-        private bool PathIsDirectory(string publishSettingsFile)
+        private bool IsDirectory()
         {
-            if (Directory.Exists(publishSettingsFile))
+            if (Directory.Exists(PublishSettingsFile))
             {
                 return true;
             }
 
-            if (string.IsNullOrEmpty(publishSettingsFile))
+            if (string.IsNullOrEmpty(PublishSettingsFile))
             {
                 return true;
             }
             return false;
         }
 
-        private string DirectoryFromPublishSettingsPath(string publishSettingsFile)
+        private void ImportDirectory()
         {
-            if (string.IsNullOrEmpty(publishSettingsFile))
+            var dirPath = ResolveDirectoryPath(PublishSettingsFile);
+
+            var files = Directory.GetFiles(dirPath, "*.publishsettings");
+            string fileToImport = files.FirstOrDefault();
+            if (fileToImport == null)
             {
-                return CurrentPath();
+                throw new Exception(string.Format(Resources.NoPublishSettingsFilesFoundMessage, dirPath));
             }
-            return publishSettingsFile;
+
+            ImportFile(fileToImport);
+
+            if (files.Length > 1)
+            {
+                WriteWarning(string.Format(Resources.MultiplePublishSettingsFilesFoundMessage, fileToImport));
+            }
+
+            WriteObject(fileToImport);
         }
 
-        private void ImportSingleFile(string subscriptionDataFile, string publishSettingsFile)
+        private void ImportFile()
         {
-            var globalSettingsManager = CreateGlobalSettingsManager(subscriptionDataFile, publishSettingsFile);
-            string loadedSubscriptionName = globalSettingsManager.ServiceConfiguration.subscriptionName;
-            SubscriptionData defaultSubscription = SetCurrentAndDefaultSubscriptions(globalSettingsManager, subscriptionDataFile);
-            if (defaultSubscription != null)
+            var fullFile = ResolveFileName(PublishSettingsFile);
+            GuardFileExists(fullFile);
+            ImportFile(fullFile);
+        }
+
+        private void ImportFile(string fileName)
+        {
+            Profile.ImportPublishSettings(fileName);
+            if (Profile.DefaultSubscription != null)
             {
                 WriteVerbose(string.Format(
                     Resources.DefaultAndCurrentSubscription,
-                    defaultSubscription.SubscriptionName));
-                RegisterResourceProviders(globalSettingsManager, loadedSubscriptionName);
+                    Profile.DefaultSubscription.Name));
             }
         }
 
-        private void ImportDirectory(string subscriptionDataFile, string searchDirectory)
+        private void GuardFileExists(string fileName)
         {
-            bool multipleFilesFound;
-            string publishSettingsFile;
-
-            string[] publishSettingsFiles = Directory.GetFiles(searchDirectory, "*.publishsettings");
-
-            if (publishSettingsFiles.Length > 0)
+            if (!File.Exists(fileName))
             {
-                publishSettingsFile = publishSettingsFiles[0];
-                multipleFilesFound = publishSettingsFiles.Length > 1;
-            }
-            else
-            {
-                throw new Exception(string.Format(Resources.NoPublishSettingsFilesFoundMessage, searchDirectory));
-            }
-
-            ImportSingleFile(subscriptionDataFile, publishSettingsFile);
-
-            if (multipleFilesFound)
-            {
-                WriteWarning(string.Format(Resources.MultiplePublishSettingsFilesFoundMessage, publishSettingsFile));
-            }
-
-            WriteObject(publishSettingsFile);
-        }
-
-        private void RegisterResourceProviders(GlobalSettingsManager globalSettingsManager, string subscriptionName)
-        {
-            var knownProviders = new List<string>(ProviderRegistrationConstants.GetKnownResourceTypes());
-            if (knownProviders.Count > 0)
-            {
-                SubscriptionData subscription =
-                    globalSettingsManager.SubscriptionManager.Subscriptions[subscriptionName];
-                ISubscriptionClient client = GetSubscriptionClient(subscription);
-                try
-                {
-                    var providers = new List<ProviderResource>(client.ListResources(knownProviders));
-                    var providersToRegister = providers
-                        .Where(p => p.State == ProviderRegistrationConstants.Unregistered)
-                        .Select(p => p.Type).ToList();
-
-                    Task.WaitAll(providersToRegister.Select(client.RegisterResourceTypeAsync).Cast<Task>().ToArray());
-                }
-                catch (AggregateException)
-                {
-                    // It's ok for registration to fail.
-                }
+                throw new Exception();
             }
         }
 
-        private GlobalSettingsManager CreateGlobalSettingsManager(string subscriptionsDataFile, string publishSettingsFile)
+        private string ResolveFileName(string filename)
         {
-            return GlobalSettingsManager.CreateFromPublishSettings(
-                GlobalPathInfo.GlobalSettingsDirectory,
-                subscriptionsDataFile,
-                publishSettingsFile);
+            return this.TryResolvePath(filename);
         }
 
-        private SubscriptionData SetCurrentAndDefaultSubscriptions(GlobalSettingsManager globalSettingsManager, string subscriptionsDataFile)
+        private string ResolveDirectoryPath(string directoryPath)
         {
-            // Set a current and default subscription if possible
-            if (globalSettingsManager.Subscriptions != null && globalSettingsManager.Subscriptions.Count > 0)
+            if (string.IsNullOrEmpty(directoryPath))
             {
-                var currentDefaultSubscription = globalSettingsManager.Subscriptions.Values.FirstOrDefault(subscription =>
-                    subscription.IsDefault);
-                if (currentDefaultSubscription == null)
-                {
-                    // Sets the a new default subscription from the imported ones
-                    currentDefaultSubscription = globalSettingsManager.Subscriptions.Values.First();
-                    currentDefaultSubscription.IsDefault = true;
-                }
-
-                if (this.GetCurrentSubscription() == null)
-                {
-                    this.SetCurrentSubscription(currentDefaultSubscription);
-                }
-
-                // Save subscriptions file to make sure publish settings subscriptions get merged
-                // into the subscriptions data file and the default subscription is updated.
-                globalSettingsManager.SaveSubscriptions(subscriptionsDataFile);
-
-                return currentDefaultSubscription;
+                return CurrentPath();
             }
-
-            return null;
-        }
-
-        public void OnImport()
-        {
-            PowerShell invoker = null;
-            string startupScriptPath = Path.Combine(
-                Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location.ToString()),
-                "startup.ps1"); 
-            invoker = System.Management.Automation.PowerShell.Create(RunspaceMode.CurrentRunspace);
-            invoker.AddScript(File.ReadAllText(startupScriptPath));
-            invoker.Invoke();
+            return directoryPath;
         }
     }
 }
-

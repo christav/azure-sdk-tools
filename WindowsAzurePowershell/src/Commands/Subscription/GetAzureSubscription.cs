@@ -18,141 +18,158 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using System.ServiceModel;
-    using Commands.Utilities.Common;
-    using Microsoft.WindowsAzure.Commands.Utilities.Properties;
-    using ServiceManagement;
+    using Management;
+    using Utilities.Common;
+    using Utilities.Properties;
 
     /// <summary>
-    /// Gets details about subscriptions.
+    /// Implementation of the get-azuresubscription cmdlet that works against
+    /// the WindowsAzureProfile layer.
     /// </summary>
-    [Cmdlet(VerbsCommon.Get, "AzureSubscription", DefaultParameterSetName = "ByName"), OutputType(typeof(SubscriptionData))]
-    public class GetAzureSubscriptionCommand : ServiceManagementBaseCmdlet
+    [Cmdlet(VerbsCommon.Get, "AzureSubscription", DefaultParameterSetName = "ByName")]
+    [OutputType(typeof(SubscriptionData))]
+    public class GetAzureSubscriptionCommand : CmdletWithSubscriptionBase
     {
-        [Parameter(Position = 0, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Name of the subscription.", ParameterSetName = "ByName")]
+        [Parameter(Position = 0, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Name of the subscription", ParameterSetName = "ByName")]
         [ValidateNotNullOrEmpty]
         public string SubscriptionName { get; set; }
 
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Subscription data file.", ParameterSetName = "ByName")]
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Subscription data file.", ParameterSetName = "Default")]
-        [ValidateNotNullOrEmpty]
-        public string SubscriptionDataFile { get; set; }
-
-        [Parameter(Mandatory = false, HelpMessage = "Retrieves the default subscription.", ParameterSetName = "Default")]
+        [Parameter(Mandatory = false, HelpMessage = "Retrieves the default subscription", ParameterSetName = "Default")]
         public SwitchParameter Default { get; set; }
 
-        [Parameter(Mandatory = false, HelpMessage = "Retrieves the current subscription.", ParameterSetName = "Current")]
+        [Parameter(Mandatory = false, HelpMessage = "Retrieves the current subscription", ParameterSetName = "Current")]
         public SwitchParameter Current { get; set; }
 
-        [Parameter(Mandatory = false, HelpMessage = "Retrieve extended details about subscription such as quota and usage.")]
+        [Parameter(Mandatory = false, HelpMessage = "Retrieves extended details about subscription such as quota and usage")]
         public SwitchParameter ExtendedDetails { get; set; }
 
-        protected virtual void WriteSubscription(SubscriptionData subscriptionData)
+        public override void ExecuteCmdlet()
         {
-            WriteObject(subscriptionData, true);
-        }
-
-        private void WriteExtendedSubscription(SubscriptionData subscriptionData, string subscriptionsDataFile)
-        {
-            SubscriptionData currentSubscription = this.GetCurrentSubscription();
-            this.SetCurrentSubscription(subscriptionData.SubscriptionName, subscriptionsDataFile);
-            InitChannelCurrentSubscription();
-            using (new OperationContextScope(Channel.ToContextChannel()))
+            switch (ParameterSetName)
             {
-                try
-                {
-                    var subprops = RetryCall(s => Channel.GetSubscription(subscriptionData.SubscriptionId));
-                    Operation operation = GetOperation();
-                    var subscriptionDataExtended = new SubscriptionDataExtended(subprops,
-                                                                                subscriptionData,
-                                                                                CommandRuntime.ToString(),
-                                                                                operation);
-                    WriteSubscription(subscriptionDataExtended);
-                }
-                catch (CommunicationException ex)
-                {
-                    WriteErrorDetails(ex);
-                }
-                finally
-                {
-                    if (currentSubscription != null && currentSubscription.Certificate != null && currentSubscription.SubscriptionId != null)
-                    {
-                        this.SetCurrentSubscription(currentSubscription.SubscriptionName, subscriptionsDataFile);
-                    }
-                }
+                case "ByName":
+                    GetByName();
+                    break;
+                case "Default":
+                    GetDefault();
+                    break;
+                case "Current":
+                    GetCurrent();
+                    break;
             }
         }
 
-        internal void GetSubscriptionProcess(string parameterSetName, string subscriptionName, string subscriptionsDataFile)
+        public void GetByName()
         {
-            IDictionary<string, SubscriptionData> subscriptions = new Dictionary<string, SubscriptionData>();
-            if (parameterSetName == "ByName")
+            IEnumerable<WindowsAzureSubscription> subscriptions = Profile.Subscriptions;
+            if (!string.IsNullOrEmpty(SubscriptionName))
             {
-                if (subscriptionName == null)
-                {
-                    subscriptions = this.GetSubscriptions(subscriptionsDataFile);
-                }
-                else
-                {
-                    SubscriptionData subscriptionData = this.GetSubscription(subscriptionName, subscriptionsDataFile);
-                    if (subscriptionData == null)
-                    {
-                        WriteSubscription(null);
-                        return;
-                    }
+                subscriptions = subscriptions.Where(s => s.Name == SubscriptionName);
+            }
+            WriteSubscriptions(subscriptions);
+        }
 
-                    subscriptions.Add(subscriptionName, subscriptionData);
-                }
-            }
-            else if (parameterSetName == "Current")
+        public void GetDefault()
+        {
+            if (Profile.DefaultSubscription == null)
             {
-                SubscriptionData subscriptionData = this.GetCurrentSubscription();
-                if (subscriptionData == null)
-                {
-                    WriteError(new ErrorRecord(
-                                    new InvalidOperationException(Resources.InvalidSelectedSubscription),
-                                    string.Empty,
-                                    ErrorCategory.InvalidData,
-                                    null));
-                }
-                else
-                {
-                    subscriptions.Add(subscriptionData.SubscriptionName, subscriptionData);
-                }
+                WriteError(new ErrorRecord(
+                    new InvalidOperationException(Resources.InvalidDefaultSubscription), 
+                    string.Empty,
+                    ErrorCategory.InvalidData, null));
             }
-            else if (parameterSetName == "Default")
+            else
             {
-                SubscriptionData subscriptionData = this.GetSubscriptions(subscriptionsDataFile).Values.FirstOrDefault(p => p.IsDefault);
-                if (subscriptionData == null)
-                {
-                    WriteError(new ErrorRecord(
-                                new InvalidOperationException(Resources.InvalidDefaultSubscription),
-                                string.Empty,
-                                ErrorCategory.InvalidData,
-                                null));
-                }
-                else
-                {
-                    subscriptions.Add(subscriptionData.SubscriptionName, subscriptionData);
-                }
-            }
-
-            foreach (var subscriptionData in subscriptions.Values)
-            {
-                if (ExtendedDetails.IsPresent)
-                {
-                    WriteExtendedSubscription(subscriptionData, subscriptionsDataFile);
-                }
-                else
-                {
-                    WriteSubscription(subscriptionData);
-                }
+                WriteSubscriptions(Profile.DefaultSubscription);
             }
         }
 
-        protected override void OnProcessRecord()
+        public void GetCurrent()
         {
-            GetSubscriptionProcess(ParameterSetName, SubscriptionName, this.ResolvePath(SubscriptionDataFile));
+            if (Profile.CurrentSubscription == null)
+            {
+                WriteError(new ErrorRecord(
+                    new InvalidOperationException(Resources.InvalidSelectedSubscription),
+                    string.Empty,
+                    ErrorCategory.InvalidData, null));
+            }
+            else
+            {
+                WriteSubscriptions(Profile.CurrentSubscription);
+            }
+        }
+
+        private void WriteSubscriptions(params WindowsAzureSubscription[] subscriptions)
+        {
+            WriteSubscriptions((IEnumerable<WindowsAzureSubscription>) subscriptions);
+        }
+
+        private void WriteSubscriptions(IEnumerable<WindowsAzureSubscription> subscriptions)
+        {
+            IEnumerable<SubscriptionData> subscriptionOutput;
+
+            if (ExtendedDetails.IsPresent)
+            {
+                subscriptionOutput = subscriptions.Select(s => s.ToExtendedData());
+            }
+            else
+            {
+                subscriptionOutput = subscriptions.Select(s => s.ToSubscriptionData());
+            }
+
+            foreach (var data in subscriptionOutput)
+            {
+                WriteObject(data, true);
+            }
+        }
+    }
+
+    static class SubscriptionConversions
+    {
+        internal static SubscriptionData ToSubscriptionData(this WindowsAzureSubscription subscription)
+        {
+            return subscription.FillSubscriptionData(new SubscriptionData());
+        }
+
+        internal static SubscriptionData ToExtendedData(this WindowsAzureSubscription subscription)
+        {
+            using (var client = subscription.CreateClient<ManagementClient>())
+            {
+                var response = client.Subscriptions.Get();
+
+                var result = new SubscriptionDataExtended
+                {
+                    AccountAdminLiveEmailId = response.AccountAdminLiveEmailId,
+                    CurrentCoreCount = response.CurrentCoreCount,
+                    CurrentHostedServices = response.CurrentHostedServices,
+                    CurrentDnsServers = 0, // TODO: Add to spec
+                    CurrentLocalNetworkSites = 0, // TODO: Add to spec
+                    MaxCoreCount = response.MaximumCoreCount,
+                    MaxDnsServers = response.MaximumDnsServers,
+                    MaxHostedServices = response.MaximumHostedServices,
+                    MaxVirtualNetworkSites = response.MaximumVirtualNetworkSites,
+                    MaxStorageAccounts = response.MaximumStorageAccounts,
+                    ServiceAdminLiveEmailId = response.ServiceAdminLiveEmailId,
+                    SubscriptionRealName = response.SubscriptionName,
+                    SubscriptionStatus = response.SubscriptionStatus.ToString()
+                };
+                subscription.FillSubscriptionData(result);
+                return result;
+            }
+        }
+
+        private static SubscriptionData FillSubscriptionData(this WindowsAzureSubscription subscription,
+            SubscriptionData data)
+        {
+            data.Certificate = subscription.Certificate;
+            data.CurrentCloudStorageAccount = subscription.CurrentCloudStorageAccount;
+            data.CurrentStorageAccount = subscription.CurrentStorageAccountName;
+            data.IsDefault = subscription.IsDefault;
+            data.ServiceEndpoint = subscription.ServiceEndpoint.ToString();
+            data.SqlAzureServiceEndpoint = subscription.SqlAzureServiceEndpoint != null ? subscription.SqlAzureServiceEndpoint.ToString() : null;
+            data.SubscriptionId = subscription.SubscriptionId;
+            data.SubscriptionName = subscription.Name;
+            return data;
         }
     }
 }

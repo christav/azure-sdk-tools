@@ -27,20 +27,19 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
     [TestClass]
     public class AddAzureEnvironmentTests : TestBase
     {
-        private FileSystemHelper helper;
+        private WindowsAzureProfile testProfile;
 
         [TestInitialize]
         public void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
-            helper = new FileSystemHelper(this);
-            helper.CreateAzureSdkDirectoryAndImportPublishSettings();
+            testProfile = new WindowsAzureProfile(new Mock<IProfileStore>().Object);
+            WindowsAzureProfile.Instance = testProfile;
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            helper.Dispose();
+            WindowsAzureProfile.ResetInstance();
         }
 
         [TestMethod]
@@ -60,7 +59,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
             cmdlet.ExecuteCmdlet();
 
             commandRuntimeMock.Verify(f => f.WriteObject(It.IsAny<WindowsAzureEnvironment>()), Times.Once());
-            WindowsAzureEnvironment env = GlobalSettingsManager.Instance.GetEnvironment("KaTaL");
+            WindowsAzureEnvironment env = WindowsAzureProfile.Instance.Environments["KaTaL"];
             Assert.AreEqual(env.Name, cmdlet.Name);
             Assert.AreEqual(env.PublishSettingsFileUrl, cmdlet.PublishSettingsFileUrl);
             Assert.AreEqual(env.ServiceEndpoint, cmdlet.ServiceEndpoint);
@@ -84,7 +83,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
             cmdlet.ExecuteCmdlet();
 
             commandRuntimeMock.Verify(f => f.WriteObject(It.IsAny<WindowsAzureEnvironment>()), Times.Once());
-            WindowsAzureEnvironment env = GlobalSettingsManager.Instance.GetEnvironment("KaTaL");
+            WindowsAzureEnvironment env = WindowsAzureProfile.Instance.Environments["KaTaL"];
             Assert.AreEqual(env.Name, cmdlet.Name);
             Assert.AreEqual(env.PublishSettingsFileUrl, cmdlet.PublishSettingsFileUrl);
         }
@@ -103,7 +102,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
                 StorageEndpoint = "endpoint.net"
             };
             cmdlet.ExecuteCmdlet();
-            int count = GlobalSettingsManager.Instance.GetEnvironments().Count;
+            int count = WindowsAzureProfile.Instance.Environments.Count;
 
             // Add again
             cmdlet.Name = "kAtAl";
@@ -120,7 +119,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
                 Name = EnvironmentName.AzureCloud,
                 PublishSettingsFileUrl = "http://microsoft.com"
             };
-            int count = GlobalSettingsManager.Instance.GetEnvironments().Count;
 
             Testing.AssertThrows<Exception>(() => cmdlet.ExecuteCmdlet());
         }
@@ -143,7 +141,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
             cmdlet.ExecuteCmdlet();
 
             commandRuntimeMock.Verify(f => f.WriteObject(It.IsAny<WindowsAzureEnvironment>()), Times.Once());
-            WindowsAzureEnvironment env = GlobalSettingsManager.Instance.GetEnvironment("KaTaL");
+            WindowsAzureEnvironment env = WindowsAzureProfile.Instance.Environments["KaTaL"];
             Assert.AreEqual(env.Name, cmdlet.Name);
             Assert.AreEqual(env.PublishSettingsFileUrl, actual.PublishSettingsFileUrl);
             Assert.AreEqual(
@@ -175,7 +173,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
             cmdlet.ExecuteCmdlet();
 
             commandRuntimeMock.Verify(f => f.WriteObject(It.IsAny<WindowsAzureEnvironment>()), Times.Once());
-            WindowsAzureEnvironment env = GlobalSettingsManager.Instance.GetEnvironment("KaTaL");
+            WindowsAzureEnvironment env = WindowsAzureProfile.Instance.Environments["KaTaL"];
             Assert.AreEqual(env.Name, cmdlet.Name);
             Assert.AreEqual(env.PublishSettingsFileUrl, actual.PublishSettingsFileUrl);
             Assert.IsTrue(string.IsNullOrEmpty(actual.StorageBlobEndpointFormat));

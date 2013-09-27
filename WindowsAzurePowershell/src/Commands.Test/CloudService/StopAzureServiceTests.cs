@@ -39,7 +39,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.CloudService
         public void SetupTest()
         {
             GlobalPathInfo.GlobalSettingsDirectory = Data.AzureSdkAppDir;
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
             mockCommandRuntime = new MockCommandRuntime();
             cloudServiceClientMock = new Mock<ICloudServiceClient>();
 

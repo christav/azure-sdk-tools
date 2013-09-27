@@ -213,8 +213,7 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.HostedServices
             if (string.Compare(ParameterSetName, "Upgrade", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 bool removePackage = false;
-                CurrentSubscription = this.GetCurrentSubscription();
-                var storageName = CurrentSubscription.CurrentStorageAccount;
+                var storageName = CurrentSubscription.CurrentStorageAccountName;
 
                 Uri packageUrl = null;
                 if (Package.StartsWith(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||

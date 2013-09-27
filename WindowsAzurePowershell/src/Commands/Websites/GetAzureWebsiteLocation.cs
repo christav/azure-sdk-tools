@@ -16,22 +16,16 @@ namespace Microsoft.WindowsAzure.Commands.Websites
 {
     using System.Collections.Generic;
     using System.Management.Automation;
-    using Commands.Utilities.Websites;
-    using Commands.Utilities.Websites.Common;
-    using Commands.Utilities.Websites.Services;
-    using Commands.Utilities.Websites.Services.WebEntities;
+    using Utilities.Websites.Common;
 
     /// <summary>
     /// Gets an azure website.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "AzureWebsiteLocation"), OutputType(typeof(ICollection<string>))]
-    public class GetAzureWebsiteLocationCommand : WebsitesBaseCmdlet
+    public class GetAzureWebsiteLocationCommand : WebsiteClientBaseCmdlet
     {
-        public IWebsitesClient WebsitesClient { get; set; }
-
         public override void ExecuteCmdlet()
         {
-            WebsitesClient = WebsitesClient ?? new WebsitesClient(CurrentSubscription, WriteDebug);
             WriteObject(WebsitesClient.ListAvailableLocations(), true);
         }
     }

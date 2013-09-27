@@ -19,7 +19,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
     using Commands.Utilities.Websites.Common;
 
     [Cmdlet(VerbsLifecycle.Disable, "AzureWebsiteApplicationDiagnostic"), OutputType(typeof(bool))]
-    public class DisableAzureWebsiteApplicationDiagnosticCommand : WebsiteClientBaseCmdlet
+    public class DisableAzureWebsiteApplicationDiagnosticCommand : WebsiteContextBaseCmdlet
     {
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru { get; set; }

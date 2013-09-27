@@ -59,14 +59,14 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Common
                 {
                     _serviceEndpoint = CurrentServiceEndpoint;
                 }
-                else if (CurrentSubscription != null && !string.IsNullOrEmpty(CurrentSubscription.ServiceEndpoint))
+                else if (CurrentSubscription != null && CurrentSubscription.ServiceEndpoint != null)
                 {
-                    _serviceEndpoint = CurrentSubscription.ServiceEndpoint;
+                    _serviceEndpoint = CurrentSubscription.ServiceEndpoint.ToString();
                 }
                 else
                 {
                     // Use default endpoint
-                    _serviceEndpoint = ConfigurationConstants.ServiceManagementEndpoint;
+                    _serviceEndpoint = Profile.CurrentEnvironment.ServiceEndpoint;
                 }
 
                 return _serviceEndpoint;
@@ -107,8 +107,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Common
         {
             if (!string.IsNullOrEmpty(subscriptionName))
             {
-                GlobalSettingsManager globalSettingsManager = GlobalSettingsManager.Load(GlobalPathInfo.GlobalSettingsDirectory);
-                CurrentSubscription = globalSettingsManager.Subscriptions.Values.First(sub => sub.SubscriptionName == subscriptionName);
+                CurrentSubscription = Profile.Subscriptions.First(s => s.Name == subscriptionName);
             }
         }
 
@@ -256,7 +255,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Common
             {
                 try
                 {
-                    SubscriptionData currentSubscription = this.GetCurrentSubscription();
+                    WindowsAzureSubscription currentSubscription = Profile.CurrentSubscription;
 
                     operation = RetryCall(s => GetOperationStatus(currentSubscription.SubscriptionId, operationId));
 

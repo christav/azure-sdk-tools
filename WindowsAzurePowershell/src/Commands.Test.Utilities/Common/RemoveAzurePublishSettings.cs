@@ -20,7 +20,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Utilities.Common
     {
         public void RemovePublishSettingsProcess(string azureSdkDirPath)
         {
-            GlobalSettingsManager.Load(azureSdkDirPath).DeleteGlobalSettingsManager();
+            new WindowsAzureProfile(new PowershellProfileStore(azureSdkDirPath, null)).DestroyData();
         }
     }
 }

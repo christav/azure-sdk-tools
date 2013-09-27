@@ -63,7 +63,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
                 ShareChannel = true,
                 CommandRuntime = commandRuntimeMock.Object,
                 Name = websiteName,
-                CurrentSubscription = new SubscriptionData { SubscriptionId = base.subscriptionId },
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = base.subscriptionId },
                 WebsitesClient = websitesClientMock.Object,
                 File = true,
                 LogLevel = LogEntryType.Information
@@ -97,7 +97,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
                 ShareChannel = true,
                 CommandRuntime = commandRuntimeMock.Object,
                 Name = websiteName,
-                CurrentSubscription = new SubscriptionData { SubscriptionId = base.subscriptionId },
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = base.subscriptionId },
                 WebsitesClient = websitesClientMock.Object,
                 Storage = true,
                 LogLevel = LogEntryType.Information,
@@ -132,10 +132,10 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
                 ShareChannel = true,
                 CommandRuntime = commandRuntimeMock.Object,
                 Name = websiteName,
-                CurrentSubscription = new SubscriptionData
+                CurrentSubscription = new WindowsAzureSubscription
                 {
                     SubscriptionId = base.subscriptionId,
-                    CurrentStorageAccount = storageName
+                    CurrentStorageAccountName = storageName
                 },
                 WebsitesClient = websitesClientMock.Object,
                 Storage = true,

@@ -150,6 +150,10 @@
     <Reference Include="Microsoft.WindowsAzure.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.WindowsAzure.ConfigurationManager.2.0.1.0\lib\net40\Microsoft.WindowsAzure.Configuration.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.WindowsAzure.Management, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Package\Debug\Microsoft.WindowsAzure.Management.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.WindowsAzure.ServiceManagement.Client, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\Microsoft.WindowsAzure.ServiceManagement.Client.dll</HintPath>
@@ -255,6 +259,7 @@
     <Compile Include="Store\NewAzureStoreAddOn.cs" />
     <Compile Include="Store\RemoveAzureStoreAddOn.cs" />
     <Compile Include="Store\SetAzureStoreAddOn.cs" />
+    <Compile Include="Subscription\RemoveAzureSubscription.cs" />
     <Compile Include="Subscription\GetAzurePublishSettingsFile.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -263,7 +268,6 @@
     </Compile>
     <Compile Include="Subscription\GetAzureSubscription.cs" />
     <Compile Include="Subscription\ImportAzurePublishSettings.cs" />
-    <Compile Include="Subscription\RemoveAzureSubscription.cs" />
     <Compile Include="Subscription\SelectAzureSubscription.cs" />
     <Compile Include="Subscription\SetAzureSubscription.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -32,12 +32,6 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Test.UnitTests.Server.Cmdl
     [TestClass]
     public class ServerCmdletTests : TestBase
     {
-        [TestInitialize]
-        public void SetupTest()
-        {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
-        }
-
         [TestMethod]
         public void NewAzureSqlDatabaseServerProcessTest()
         {

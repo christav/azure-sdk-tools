@@ -65,7 +65,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
                 CommandRuntime = mockRuntime,
                 Name = websiteName,
                 Location = webspaceName,
-                CurrentSubscription = new SubscriptionData { SubscriptionId = base.subscriptionId },
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = base.subscriptionId },
                 WebsitesClient = clientMock.Object
             };
 
@@ -110,7 +110,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
                 ShareChannel = true,
                 CommandRuntime = mockRuntime,
                 Name = websiteName,
-                CurrentSubscription = new SubscriptionData { SubscriptionId = base.subscriptionId },
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = base.subscriptionId },
                 WebsitesClient = clientMock.Object
             };
 

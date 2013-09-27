@@ -22,7 +22,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
         {
             HttpClient fakeHttpClient = new FakeHttpMessageHandler().CreateIMediaServicesHttpClient();
 
-            var target = new MediaServicesClient(new SubscriptionData
+            var target = new MediaServicesClient(new WindowsAzureSubscription
             {
                 SubscriptionId = _subscriptionId
             },
@@ -51,7 +51,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
 
             HttpClient fakeHttpClient = fakeHttpHandler.CreateIMediaServicesHttpClient();
 
-            var target = new MediaServicesClient(new SubscriptionData
+            var target = new MediaServicesClient(new WindowsAzureSubscription
             {
                 SubscriptionId = _subscriptionId
             },
@@ -78,7 +78,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
         {
             HttpClient fakeHttpClient = new FakeHttpMessageHandler().CreateIMediaServicesHttpClient();
 
-            var target = new MediaServicesClient(new SubscriptionData
+            var target = new MediaServicesClient(new WindowsAzureSubscription
             {
                 SubscriptionId = _subscriptionId
             },
@@ -108,7 +108,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
 
             HttpClient fakeHttpClient = fakeHttpHandler.CreateIMediaServicesHttpClient();
 
-            var target = new MediaServicesClient(new SubscriptionData
+            var target = new MediaServicesClient(new WindowsAzureSubscription
             {
                 SubscriptionId = _subscriptionId
             },
@@ -139,7 +139,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
 
             HttpClient fakeHttpClient = fakeHttpHandler.CreateIMediaServicesHttpClient();
 
-            var target = new MediaServicesClient(new SubscriptionData
+            var target = new MediaServicesClient(new WindowsAzureSubscription
             {
                 SubscriptionId = _subscriptionId
             },
@@ -172,7 +172,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
             var fakeHttpClient = fakeHttpHandler.CreateIMediaServicesHttpClient();
 
             var target = new MediaServicesClient(
-                new SubscriptionData { SubscriptionId = _subscriptionId },
+                new WindowsAzureSubscription { SubscriptionId = _subscriptionId },
                 null,
                 fakeHttpClient,
                 fakeHttpClient);
@@ -201,7 +201,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
             var fakeHttpClient = fakeHttpHandler.CreateIMediaServicesHttpClient();
 
             var target = new MediaServicesClient(
-                new SubscriptionData { SubscriptionId = _subscriptionId },
+                new WindowsAzureSubscription { SubscriptionId = _subscriptionId },
                 null,
                 fakeHttpClient,
                 fakeHttpClient);
@@ -238,7 +238,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
             var fakeHttpClient = fakeHttpHandler.CreateIMediaServicesHttpClient();
 
             var target = new MediaServicesClient(
-                new SubscriptionData { SubscriptionId = _subscriptionId },
+                new WindowsAzureSubscription { SubscriptionId = _subscriptionId },
                 null,
                 fakeHttpClient,
                 fakeHttpClient);
@@ -266,7 +266,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
             var fakeHttpClient = fakeHttpHandler.CreateIMediaServicesHttpClient();
 
             var target = new MediaServicesClient(
-                new SubscriptionData { SubscriptionId = _subscriptionId },
+                new WindowsAzureSubscription { SubscriptionId = _subscriptionId },
                 null,
                 fakeHttpClient,
                 fakeHttpClient);

@@ -17,8 +17,8 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
     using System.Collections.Generic;
     using System.Management.Automation;
     using System.Security.Permissions;
-    using Commands.Utilities.Common;
-
+    using Utilities.Common;
+    using Utilities.Properties;
     /// <summary>
     /// Sets a Windows Azure environment.
     /// </summary>
@@ -40,15 +40,34 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
         [Parameter(Position = 4, Mandatory = false, HelpMessage = "The storage endpoint")]
         public string StorageEndpoint { get; set; }
 
+        [Parameter(Position = 5, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Active directory endpoint")]
+        public string AdEndpointUrl { get; set; }
+
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         public override void ExecuteCmdlet()
         {
-            WriteObject(GlobalSettingsManager.Instance.ChangeEnvironmentStorageEndpoint(
-                Name,
-                PublishSettingsFileUrl,
-                ServiceEndpoint,
-                ManagementPortalUrl,
-                StorageEndpoint));
+            try
+            {
+                var env = WindowsAzureProfile.Instance.Environments[Name];
+                env.PublishSettingsFileUrl = Value(PublishSettingsFileUrl, env.PublishSettingsFileUrl);
+                env.ServiceEndpoint = Value(ServiceEndpoint, env.ServiceEndpoint);
+                env.ManagementPortalUrl = Value(ManagementPortalUrl, env.ManagementPortalUrl);
+                env.StorageEndpointSuffix = Value(StorageEndpoint, env.StorageEndpointSuffix);
+                env.AdTenantUrl = Value(AdEndpointUrl, env.AdTenantUrl);
+
+                WindowsAzureProfile.Instance.UpdateEnvironment(env);
+
+                WriteObject(env);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                throw new KeyNotFoundException(string.Format(Resources.EnvironmentNotFound, Name), ex);
+            }
+        }
+
+        private static string Value(string newValue, string existingValue)
+        {
+            return string.IsNullOrEmpty(newValue) ? existingValue : newValue;
         }
     }
 }

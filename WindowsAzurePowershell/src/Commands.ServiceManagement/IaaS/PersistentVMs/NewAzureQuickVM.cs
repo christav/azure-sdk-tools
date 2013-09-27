@@ -261,11 +261,11 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.IaaS.PersistentVMs
 
         public void NewAzureVMProcess()
         {
-            SubscriptionData currentSubscription = this.GetCurrentSubscription();
+            WindowsAzureSubscription currentSubscription = CurrentSubscription;
             CloudStorageAccount currentStorage = null;
             try
             {
-                currentStorage = currentSubscription.GetCurrentStorageAccount();
+                currentStorage = currentSubscription.GetCloudStorageAccount();
             }
             catch (ServiceManagementClientException) // couldn't access
             {

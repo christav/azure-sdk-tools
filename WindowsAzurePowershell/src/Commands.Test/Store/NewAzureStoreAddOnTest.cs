@@ -38,7 +38,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.Store
         [TestInitialize]
         public void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
             new FileSystemHelper(this).CreateAzureSdkDirectoryAndImportPublishSettings();
             mockCommandRuntime = new Mock<ICommandRuntime>();
             mockStoreClient = new Mock<StoreClient>();

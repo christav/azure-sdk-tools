@@ -12,16 +12,29 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
-namespace Microsoft.WindowsAzure.Commands.Utilities.Common
+namespace Microsoft.WindowsAzure.Commands.Utilities.Websites.Common
 {
-    using System.Collections.Generic;
-    using System.Security.Cryptography.X509Certificates;
+    using Utilities.Common;
 
-    public interface ISubscriptionsManager
+    /// <summary>
+    /// Base class for Websites Cmdlets that don't use WCF channel for service management
+    /// </summary>
+    public abstract class NewWebsitesBaseCmdlet : CmdletWithSubscriptionBase
     {
-        IDictionary<string, SubscriptionData> Subscriptions { get; }
+        private IWebsitesClient websitesClient;
 
-        void ImportSubscriptionsFile(string subscriptionsDataFile, X509Certificate2 publishSettingsCertificate);
-        void SaveSubscriptions(string subscriptionsDataFile);
+        public IWebsitesClient WebsitesClient
+        {
+            get
+            {
+                if (websitesClient == null)
+                {
+                    websitesClient = new WebsitesClient(CurrentSubscription, WriteDebug);
+                }
+                return websitesClient;
+            }
+
+            set { websitesClient = value; }
+        }
     }
 }

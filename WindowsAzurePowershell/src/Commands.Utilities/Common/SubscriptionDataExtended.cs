@@ -14,8 +14,6 @@
 
 namespace Microsoft.WindowsAzure.Commands.Utilities.Common
 {
-    using ServiceManagement;
-
     public class SubscriptionDataExtended : SubscriptionData
     {
         public string AccountAdminLiveEmailId { get; set; }
@@ -37,36 +35,5 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Common
         public string OperationDescription { get; set; }
         public string OperationId { get; set; }
         public string OperationStatus { get; set; }
-
-        public SubscriptionDataExtended(Subscription subscription, SubscriptionData subscriptionData,
-            string description, Operation operation)
-        {
-            OperationDescription = description;
-            OperationStatus = operation.Status;
-            OperationId = operation.OperationTrackingId;
-            SubscriptionName = subscriptionData.SubscriptionName;
-            SubscriptionId = subscriptionData.SubscriptionId;
-            Certificate = subscriptionData.Certificate;
-            CurrentStorageAccount = subscriptionData.CurrentStorageAccount;
-            ServiceEndpoint = subscriptionData.ServiceEndpoint;
-            SqlAzureServiceEndpoint = subscriptionData.SqlAzureServiceEndpoint;
-            IsDefault = subscriptionData.IsDefault;
-            AccountAdminLiveEmailId = subscription.AccountAdminLiveEmailId;
-            CurrentCoreCount = subscription.CurrentCoreCount;
-            CurrentHostedServices = subscription.CurrentHostedServices;
-            CurrentStorageAccounts = subscription.CurrentStorageAccounts;
-            CurrentDnsServers = subscription.CurrentDnsServers;
-            CurrentLocalNetworkSites = subscription.CurrentLocalNetworkSites;
-            CurrentVirtualNetworkSites = subscription.CurrentVirtualNetworkSites;
-            MaxCoreCount = subscription.MaxCoreCount;
-            MaxHostedServices = subscription.MaxHostedServices;
-            MaxStorageAccounts = subscription.MaxStorageAccounts;
-            MaxDnsServers = subscription.MaxDnsServers;
-            MaxLocalNetworkSites = subscription.MaxLocalNetworkSites;
-            MaxVirtualNetworkSites = subscription.MaxVirtualNetworkSites;
-            ServiceAdminLiveEmailId = subscription.ServiceAdminLiveEmailId;
-            SubscriptionRealName = subscription.SubscriptionName;
-            SubscriptionStatus = subscription.SubscriptionStatus;
-        }
     }
 }

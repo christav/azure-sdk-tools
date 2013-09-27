@@ -286,11 +286,11 @@ namespace Microsoft.WindowsAzure.Commands.Test.Utilities.Common
             Debug.Assert(string.IsNullOrEmpty(AzureSdkPath));
 
             AzureSdkPath = CreateDirectory("AzureSdk");
+            var profile = new WindowsAzureProfile(new PowershellProfileStore(AzureSdkPath, "azureProfile.xml"));
+            profile.ImportPublishSettings(publishSettingsPath);
+            WindowsAzureProfile.Instance = profile;
+
             GlobalPathInfo.GlobalSettingsDirectory = AzureSdkPath;
-            GlobalSettingsManager globalSettingsManager = GlobalSettingsManager.CreateFromPublishSettings(
-                GlobalPathInfo.GlobalSettingsDirectory,
-                null,
-                publishSettingsPath);
 
             return AzureSdkPath;
         }

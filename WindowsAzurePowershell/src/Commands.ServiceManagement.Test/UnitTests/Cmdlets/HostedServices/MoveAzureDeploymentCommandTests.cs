@@ -33,7 +33,6 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.Test.UnitTests.Cmdle
         [TestInitialize]
         public void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
             files = new FileSystemHelper(this);
             //files.CreateAzureSdkDirectoryAndImportPublishSettings();
         }
@@ -106,7 +105,7 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.Test.UnitTests.Cmdle
                 ShareChannel = true,
                 CommandRuntime = new MockCommandRuntime(),
                 ServiceName = "testService",
-                CurrentSubscription = new SubscriptionData
+                CurrentSubscription = new WindowsAzureSubscription
                 {
                     SubscriptionId = "testId"
                 }

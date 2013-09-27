@@ -28,20 +28,19 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
     [TestClass]
     public class SetAzureEnvironmentTests : TestBase
     {
-        private FileSystemHelper helper;
+        private WindowsAzureProfile testProfile;
 
         [TestInitialize]
         public void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
-            helper = new FileSystemHelper(this);
-            helper.CreateAzureSdkDirectoryAndImportPublishSettings();
+            testProfile = new WindowsAzureProfile(new Mock<IProfileStore>().Object);
+            WindowsAzureProfile.Instance = testProfile;
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            helper.Dispose();
+            WindowsAzureProfile.ResetInstance();
         }
 
         [TestMethod]
@@ -49,7 +48,8 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
         {
             Mock<ICommandRuntime> commandRuntimeMock = new Mock<ICommandRuntime>();
             string name = "Katal";
-            GlobalSettingsManager.Instance.AddEnvironment(name, "publish file url");
+            testProfile.AddEnvironment(new WindowsAzureEnvironment { Name = name, PublishSettingsFileUrl = "publish file url"});
+
             SetAzureEnvironmentCommand cmdlet = new SetAzureEnvironmentCommand()
             {
                 CommandRuntime = commandRuntimeMock.Object,
@@ -63,7 +63,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
             cmdlet.ExecuteCmdlet();
 
             commandRuntimeMock.Verify(f => f.WriteObject(It.IsAny<WindowsAzureEnvironment>()), Times.Once());
-            WindowsAzureEnvironment env = GlobalSettingsManager.Instance.GetEnvironment("KaTaL");
+            WindowsAzureEnvironment env = WindowsAzureProfile.Instance.Environments["KaTaL"];
             Assert.AreEqual(env.Name.ToLower(), cmdlet.Name.ToLower());
             Assert.AreEqual(env.PublishSettingsFileUrl, cmdlet.PublishSettingsFileUrl);
             Assert.AreEqual(env.ServiceEndpoint, cmdlet.ServiceEndpoint);

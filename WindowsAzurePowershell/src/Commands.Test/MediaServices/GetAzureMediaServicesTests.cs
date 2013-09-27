@@ -34,7 +34,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
         [TestInitialize]
         public virtual void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
             new FileSystemHelper(this).CreateAzureSdkDirectoryAndImportPublishSettings();
         }
 
@@ -66,7 +65,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
             {
                 CommandRuntime = new MockCommandRuntime(),
                 MediaServicesClient = clientMock.Object,
-                CurrentSubscription = new SubscriptionData
+                CurrentSubscription = new WindowsAzureSubscription
                 {
                     SubscriptionId = SubscriptionId
                 }
@@ -101,7 +100,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
             {
                 CommandRuntime = new MockCommandRuntime(),
                 MediaServicesClient = clientMock.Object,
-                CurrentSubscription = new SubscriptionData
+                CurrentSubscription = new WindowsAzureSubscription
                 {
                     SubscriptionId = SubscriptionId
                 }
@@ -142,7 +141,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.MediaServices
             {
                 CommandRuntime = new MockCommandRuntime(),
                 MediaServicesClient = clientMock.Object,
-                CurrentSubscription = new SubscriptionData
+                CurrentSubscription = new WindowsAzureSubscription
                 {
                     SubscriptionId = SubscriptionId
                 }

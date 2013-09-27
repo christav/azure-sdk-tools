@@ -46,7 +46,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.MediaServices
         /// </summary>
         /// <param name="subscription">The Windows Azure subscription data object</param>
         /// <param name="logger">The logger action</param>
-        public MediaServicesClient(SubscriptionData subscription, Action<string> logger, HttpClient httpClient, HttpClient storageClient)
+        public MediaServicesClient(WindowsAzureSubscription subscription, Action<string> logger, HttpClient httpClient, HttpClient storageClient)
         {
             
             Subscription = subscription;
@@ -60,7 +60,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.MediaServices
         /// </summary>
         /// <param name="subscription">The Windows Azure subscription data object</param>
         /// <param name="logger">The logger action</param>
-        public MediaServicesClient(SubscriptionData subscription, Action<string> logger) : this(subscription, logger, CreateIMediaServicesHttpClient(subscription), CreateStorageServiceHttpClient(subscription))
+        public MediaServicesClient(WindowsAzureSubscription subscription, Action<string> logger) : this(subscription, logger, CreateIMediaServicesHttpClient(subscription), CreateStorageServiceHttpClient(subscription))
         {
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.MediaServices
         /// <value>
         ///     The subscription.
         /// </value>
-        public SubscriptionData Subscription { get; set; }
+        public WindowsAzureSubscription Subscription { get; set; }
 
         /// <summary>
         ///     Gets or sets the logger
@@ -246,11 +246,11 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.MediaServices
         ///     Creates and initialise instance of HttpClient
         /// </summary>
         /// <returns></returns>
-        private static HttpClient CreateStorageServiceHttpClient(SubscriptionData subscription)
+        private static HttpClient CreateStorageServiceHttpClient(WindowsAzureSubscription subscription)
         {
             var requestHandler = new WebRequestHandler();
             requestHandler.ClientCertificates.Add(subscription.Certificate);
-            var endpoint = new StringBuilder(General.EnsureTrailingSlash(subscription.ServiceEndpoint));
+            var endpoint = new StringBuilder(General.EnsureTrailingSlash(subscription.ServiceEndpoint.ToString()));
             endpoint.Append(subscription.SubscriptionId);
 
             //Please note that / is nessesary here
@@ -267,11 +267,11 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.MediaServices
         ///     Creates and initialise instance of HttpClient
         /// </summary>
         /// <returns></returns>
-        private static HttpClient CreateIMediaServicesHttpClient(SubscriptionData subscription)
+        private static HttpClient CreateIMediaServicesHttpClient(WindowsAzureSubscription subscription)
         {
             var requestHandler = new WebRequestHandler();
             requestHandler.ClientCertificates.Add(subscription.Certificate);
-            var endpoint = new StringBuilder(General.EnsureTrailingSlash(subscription.ServiceEndpoint));
+            var endpoint = new StringBuilder(General.EnsureTrailingSlash(subscription.ServiceEndpoint.ToString()));
             endpoint.Append(subscription.SubscriptionId);
 
             //Please note that / is nessesary here

@@ -15,17 +15,16 @@
 namespace Microsoft.WindowsAzure.Commands.Subscription
 {
     using System;
-    using System.IO;
+    using System.Linq;
     using System.Management.Automation;
     using System.Security.Cryptography.X509Certificates;
-    using Commands.Utilities.Common;
-    using Microsoft.WindowsAzure.Commands.Utilities.Properties;
+    using Utilities.Common;
 
     /// <summary>
     /// Sets an azure subscription.
     /// </summary>
     [Cmdlet(VerbsCommon.Set, "AzureSubscription", DefaultParameterSetName = "CommonSettings"), OutputType(typeof(bool))]
-    public class SetAzureSubscriptionCommand : PSCmdlet
+    public class SetAzureSubscriptionCommand : CmdletWithSubscriptionBase
     {
         [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "Name of the subscription.", ParameterSetName = "CommonSettings")]
         [Parameter(Position = 0, Mandatory = true, ValueFromPipelineByPropertyName = true, HelpMessage = "Name of the subscription.", ParameterSetName = "ResetCurrentStorageAccount")]
@@ -45,16 +44,6 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
         [ValidateNotNullOrEmpty]
         public string CurrentStorageAccount { get; set; }
 
-        [Parameter(Mandatory = true, HelpMessage = "Default subscription name.", ParameterSetName = "DefaultSubscription")]
-        public string DefaultSubscription { get; set; }
-
-        [Parameter(Mandatory = true, HelpMessage = "Reset the current default subscription setting.", ParameterSetName = "ResetDefaultSubscription")]
-        public SwitchParameter NoDefaultSubscription { get; set; }
-
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "Subscription data file.")]
-        [ValidateNotNullOrEmpty]
-        public string SubscriptionDataFile { get; set; }
-
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru { get; set; }
 
@@ -64,139 +53,73 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
         }
 
         /// <summary>
-        /// Sets the default subscription properties based on the cmdlet parameters.
-        /// </summary>
-        /// <param name="subscription">The subscription where to set the properties.</param>
-        /// <param name="subscriptionId">The subscription's identifier.</param>
-        /// <param name="certificate">The subscription's certificate.</param>
-        /// <param name="serviceEndpoint">The subscription's service endpoint</param>
-        /// <param name="currentStorageAccount">The current storage account.</param>
-        private void SetCommonSettingsProcess(SubscriptionData subscription, string subscriptionId, X509Certificate2 certificate, string serviceEndpoint, string currentStorageAccount)
-        {
-            if (subscriptionId != null)
-            {
-                subscription.SubscriptionId = subscriptionId;
-            }
-
-            if (certificate != null)
-            {
-                subscription.Certificate = certificate;
-            }
-
-            if (serviceEndpoint != null)
-            {
-                subscription.ServiceEndpoint = serviceEndpoint;
-            }
-
-            if (currentStorageAccount != null)
-            {
-                subscription.NullCurrentStorageAccount(); // next time it is retrieved get the right account info.
-                subscription.CurrentStorageAccount = currentStorageAccount;
-            }
-        }
-
-        /// <summary>
         /// Executes the set subscription cmdlet operation.
         /// </summary>
-        /// <param name="parameterSetName">The type of set operation to perform.</param>
-        /// <param name="subscriptionName">The existing or new subscription name.</param>
-        /// <param name="subscriptionId">The subscription identifier for the existing or new subscription.</param>
-        /// <param name="certificate">The certificate for the existing or new subscription.</param>
-        /// <param name="serviceEndpoint">The service endpoint for the existing or new subscription.</param>
-        /// <param name="defaultSubscription">The subscription name for the new subscription.</param>
-        /// <param name="currentStorageAccount">The current storage account.</param>
-        /// <param name="subscriptionDataFile">The input/output subscription data file to use.</param>
-        internal void SetSubscriptionProcess(string parameterSetName, string subscriptionName, string subscriptionId, X509Certificate2 certificate, string serviceEndpoint, string defaultSubscription, string currentStorageAccount, string subscriptionDataFile)
+        internal void SetSubscriptionProcess()
         {
-            SubscriptionData currentSubscription = this.GetCurrentSubscription();
-            if (currentSubscription != null && 
-                !string.IsNullOrEmpty(currentSubscription.ServiceEndpoint) &&
-                string.IsNullOrEmpty(serviceEndpoint))
+            WindowsAzureSubscription subscription = Profile.Subscriptions.FirstOrDefault(s => s.Name == SubscriptionName);
+            if (subscription == null)
             {
-                // If the current subscription already has a service endpoint do not overwrite if not specified 
-                serviceEndpoint = currentSubscription.ServiceEndpoint;
-            }
-            else if (string.IsNullOrEmpty(serviceEndpoint))
-            {
-                // No current subscription and nothing specified initialize with the default
-                serviceEndpoint = ConfigurationConstants.ServiceManagementEndpoint;
-            }
-
-            if (parameterSetName == "DefaultSubscription")
-            {
-                // Set a new default subscription
-                this.SetDefaultSubscription(defaultSubscription, subscriptionDataFile);
-                this.SetCurrentSubscription(defaultSubscription, subscriptionDataFile);
-            }
-            else if (parameterSetName == "ResetDefaultSubscription")
-            {
-                // Reset default subscription
-                this.SetDefaultSubscription(null, subscriptionDataFile);
+                CreateNewSubscription();
             }
             else
             {
-                // Update or create a new subscription
-                GlobalSettingsManager globalSettingsManager;
-                try
-                {
-                    globalSettingsManager = GlobalSettingsManager.Load(GlobalPathInfo.GlobalSettingsDirectory, subscriptionDataFile);
-                }
-                catch (FileNotFoundException)
-                {
-                    // assume that import has never been ran and just create it.
-                    globalSettingsManager = GlobalSettingsManager.Create(GlobalPathInfo.GlobalSettingsDirectory,
-                        subscriptionDataFile,
-                        certificate,
-                        serviceEndpoint);
-                }
-
-                SubscriptionData subscription = globalSettingsManager.Subscriptions.ContainsKey(subscriptionName)
-                    ? globalSettingsManager.Subscriptions[subscriptionName]
-                    : new SubscriptionData { SubscriptionName = subscriptionName, IsDefault = (globalSettingsManager.Subscriptions.Count == 0) };
-
-                if (parameterSetName == "CommonSettings")
-                {
-                    SetCommonSettingsProcess(subscription, subscriptionId, certificate, serviceEndpoint, currentStorageAccount);
-                }
-
-                // Create or update
-                globalSettingsManager.Subscriptions[subscription.SubscriptionName] = subscription;
-                globalSettingsManager.SaveSubscriptions(subscriptionDataFile);
-
-                currentSubscription = this.GetCurrentSubscription();
-                if (currentSubscription == null || string.Compare(currentSubscription.SubscriptionName, subscription.SubscriptionName, StringComparison.OrdinalIgnoreCase) == 0)
-                {
-                    // If the user modifies a subscription using Set-AzureSubscription, but doesn't call Select-AzureSubscription
-                    // it is not immediately reflected in the code. This takes into account if they modify the current subscription 
-                    // that they shouldn't have to call Select-AzureSubscription once again to have the values updated in session.
-                    this.SetCurrentSubscription(subscription.SubscriptionName, subscriptionDataFile);
-
-                    if (currentSubscription != null)
-                    {
-                        WriteMessage(string.Format(
-                            Resources.UpdatedSettings,
-                            subscriptionName,
-                            currentSubscription.SubscriptionName));
-                    }
-                }
+                UpdateExistingSubscription(subscription);
             }
         }
 
-        protected override void ProcessRecord()
+        private void CreateNewSubscription()
+        {
+            var subscription = new WindowsAzureSubscription
+            {
+                Name = SubscriptionName,
+                SubscriptionId = SubscriptionId,
+                Certificate = Certificate,
+                CurrentStorageAccountName = CurrentStorageAccount
+            };
+
+            if (string.IsNullOrEmpty(ServiceEndpoint))
+            {
+                subscription.ServiceEndpoint = new Uri(Profile.CurrentEnvironment.ServiceEndpoint);
+            }
+            else
+            {
+                subscription.ServiceEndpoint = new Uri(ServiceEndpoint);
+            }
+
+            Profile.AddSubscription(subscription);
+        }
+
+        private void UpdateExistingSubscription(WindowsAzureSubscription subscription)
+        {
+            if (!string.IsNullOrEmpty(SubscriptionId))
+            {
+                subscription.SubscriptionId = SubscriptionId;
+            }
+
+            if (Certificate != null)
+            {
+                subscription.Certificate = Certificate;
+            }
+
+            if (ServiceEndpoint != null)
+            {
+                subscription.ServiceEndpoint = new Uri(ServiceEndpoint);
+            }
+
+            if (CurrentStorageAccount != null)
+            {
+                subscription.CurrentStorageAccountName = CurrentStorageAccount;
+            }
+
+            Profile.UpdateSubscription(subscription);
+        }
+
+        public override void ExecuteCmdlet()
         {
             try
             {
-                base.ProcessRecord();
-                SetSubscriptionProcess(
-                    ParameterSetName,
-                    SubscriptionName,
-                    SubscriptionId,
-                    Certificate,
-                    ServiceEndpoint,
-                    DefaultSubscription,
-                    CurrentStorageAccount,
-                    this.TryResolvePath(SubscriptionDataFile));
-
+                SetSubscriptionProcess();
                 if (PassThru.IsPresent)
                 {
                     WriteObject(true);

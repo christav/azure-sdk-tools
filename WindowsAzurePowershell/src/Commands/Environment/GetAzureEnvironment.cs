@@ -36,20 +36,17 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
             if (string.IsNullOrEmpty(Name))
             {
                 List<PSObject> output = new List<PSObject>();
-                GlobalSettingsManager.Instance.GetEnvironments().ForEach(e =>
-                {
-                    output.Add(base.ConstructPSObject(
-                        null,
-                        Parameters.EnvironmentName, e.Name,
-                        Parameters.ServiceEndpoint, e.ServiceEndpoint,
-                        Parameters.PublishSettingsFileUrl, e.PublishSettingsFileUrl));
-                });
+                WindowsAzureProfile.Instance.Environments.Values.ForEach(e => output.Add(base.ConstructPSObject(
+                    null,
+                    Parameters.EnvironmentName, e.Name,
+                    Parameters.ServiceEndpoint, e.ServiceEndpoint,
+                    Parameters.PublishSettingsFileUrl, e.PublishSettingsFileUrl)));
 
                 WriteObject(output, true);
             }
             else
             {
-                WriteObject(GlobalSettingsManager.Instance.GetEnvironment(Name));
+                WriteObject(WindowsAzureProfile.Instance.Environments[Name]);
             }
         }
     }

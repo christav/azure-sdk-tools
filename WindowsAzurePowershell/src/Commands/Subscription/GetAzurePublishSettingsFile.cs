@@ -41,7 +41,17 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         public override void ExecuteCmdlet()
         {
-            string url = GlobalSettingsManager.Instance.GetPublishSettingsFile(Environment, Realm);
+            WindowsAzureEnvironment environment;
+            if (string.IsNullOrEmpty(Environment))
+            {
+                environment = WindowsAzureProfile.Instance.CurrentEnvironment;
+            }
+            else
+            {
+                environment = WindowsAzureProfile.Instance.Environments[Environment];
+            }
+
+            string url = environment.PublishSettingsFileUrlWithRealm(Realm);
             General.LaunchWebPage(url);
 
             if (PassThru)

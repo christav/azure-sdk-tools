@@ -18,9 +18,8 @@ namespace Microsoft.WindowsAzure.Commands.Websites
     using System.Collections.Generic;
     using System.Linq;
     using System.Management.Automation;
-    using Utilities.Common;
     using Utilities.Properties;
-    using Utilities.Websites;
+    using Utilities.Websites.Common;
     using Utilities.Websites.Services;
     using Utilities.Websites.Services.DeploymentEntities;
     using Utilities.Websites.Services.WebEntities;
@@ -29,16 +28,8 @@ namespace Microsoft.WindowsAzure.Commands.Websites
     /// Gets an azure website.
     /// </summary>
     [Cmdlet(VerbsCommon.Get, "AzureWebsite"), OutputType(typeof(SiteWithConfig), typeof(IEnumerable<Site>))]
-    public class GetAzureWebsiteCommand : CmdletWithSubscriptionBase
+    public class GetAzureWebsiteCommand : NewWebsitesBaseCmdlet
     {
-        private IWebsitesClient websitesClient;
-
-        public IWebsitesClient WebsitesClient
-        {
-            get { return websitesClient ?? (websitesClient = new WebsitesClient(CurrentSubscription, WriteDebug)); }
-            set { websitesClient = value; }
-        }
-
         [Parameter(Position = 0, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The web site name.")]
         [ValidateNotNullOrEmpty]
         public string Name
@@ -93,7 +84,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
             Do(() =>
                 {
                     var websites = WebsitesClient.ListWebSpaces()
-                        .SelectMany(space => websitesClient.ListSitesInWebSpace(space.Name))
+                        .SelectMany(space => WebsitesClient.ListSitesInWebSpace(space.Name))
                         .ToList();
                     Cache.SaveSites(CurrentSubscription.SubscriptionId, new Sites(websites));
                     WriteWebsites(websites);

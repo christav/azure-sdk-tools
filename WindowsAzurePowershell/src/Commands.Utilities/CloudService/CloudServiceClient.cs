@@ -44,8 +44,6 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.CloudService
 
     public class CloudServiceClient : ICloudServiceClient
     {
-        private string subscriptionId;
-
         internal CloudBlobUtility CloudBlobUtility { get; set; }
 
         internal ManagementClient ManagementClient { get; set; }
@@ -54,7 +52,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.CloudService
 
         internal ComputeManagementClient ComputeClient { get; set; }
 
-        public SubscriptionData Subscription { get; set; }
+        public WindowsAzureSubscription Subscription { get; set; }
 
         public Action<string> DebugStream { get; set; }
 
@@ -470,7 +468,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.CloudService
             // If there's no storage service provided, try using the default one
             if (string.IsNullOrEmpty(storageServiceName))
             {
-                storageServiceName = Subscription.CurrentStorageAccount;
+                storageServiceName = Subscription.CurrentStorageAccountName;
             }
 
             // Use default location if not location and affinity group provided
@@ -483,7 +481,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.CloudService
                 slot,
                 location,
                 affinityGroup,
-                Subscription.SubscriptionName,
+                Subscription.Name,
                 storageServiceName,
                 name,
                 cloudServiceProject.ServiceName,
@@ -510,48 +508,38 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.CloudService
         /// <param name="verboseStream">Action used to log detailed client progress</param>
         /// <param name="warningStream">Action used to log warning messages</param>
         public CloudServiceClient(
-            SubscriptionData subscription,
+            WindowsAzureSubscription subscription,
             string currentLocation = null,
             Action<string> debugStream = null,
             Action<string> verboseStream = null,
             Action<string> warningStream = null)
+            : this(currentLocation, debugStream, warningStream, verboseStream)
         {
             Subscription = subscription;
-            subscriptionId = subscription.SubscriptionId;
+            CloudBlobUtility = new CloudBlobUtility();
+
+            ManagementClient = subscription.CreateClient<ManagementClient>();
+            StorageClient = subscription.CreateClient<StorageManagementClient>();
+            ComputeClient = subscription.CreateClient<ComputeManagementClient>();
+        }
+
+        private CloudServiceClient(string currentLocation, Action<string> debugStream, Action<string> verboseStream,
+                                   Action<string> warningStream)
+        {
             CurrentDirectory = currentLocation;
             DebugStream = debugStream;
             VerboseStream = verboseStream;
             WarningStream = warningStream;
-
-            CloudBlobUtility = new CloudBlobUtility();
-
-            ManagementClient = CloudContext.Clients.CreateManagementClient(
-                new CertificateCloudCredentials(subscription.SubscriptionId, subscription.Certificate),
-                new Uri(subscription.ServiceEndpoint))
-                .WithHandler(new StandardHeadersHandler())
-                .WithHandler(new HttpRestCallLogger());
-
-            StorageClient = CloudContext.Clients.CreateStorageManagementClient(
-                new CertificateCloudCredentials(subscription.SubscriptionId, subscription.Certificate),
-                new Uri(subscription.ServiceEndpoint))
-                .WithHandler(new StandardHeadersHandler())
-                .WithHandler(new HttpRestCallLogger());
-
-            ComputeClient = CloudContext.Clients.CreateComputeManagementClient(
-                new CertificateCloudCredentials(subscription.SubscriptionId, subscription.Certificate),
-                new Uri(subscription.ServiceEndpoint))
-                .WithHandler(new StandardHeadersHandler())
-                .WithHandler(new HttpRestCallLogger());
         }
 
         internal CloudServiceClient(
-            SubscriptionData subscription,
+            WindowsAzureSubscription subscription,
             ManagementClient managementClient,
             StorageManagementClient storageManagementClient,
             ComputeManagementClient computeManagementClient)
+            : this((string)null, null, null, null)
         {
             Subscription = subscription;
-            subscriptionId = subscription.SubscriptionId;
             CurrentDirectory = null;
             DebugStream = null;
             VerboseStream = null;
@@ -661,7 +649,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.CloudService
             WriteVerboseWithTimestamp(
                     Resources.PublishPreparingDeploymentMessage,
                     context.ServiceName,
-                    subscriptionId);
+                    Subscription.SubscriptionId);
             UpdateCacheWorkerRolesCloudConfiguration(context);
 
             // Create cloud package

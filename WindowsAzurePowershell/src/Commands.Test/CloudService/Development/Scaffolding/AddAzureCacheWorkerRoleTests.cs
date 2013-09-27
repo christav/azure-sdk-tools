@@ -43,7 +43,6 @@ namespace Microsoft.WindowsAzure.Commands.Test.CloudService.Development.Scaffold
         public void SetupTest()
         {
             GlobalPathInfo.GlobalSettingsDirectory = Data.AzureSdkAppDir;
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
             mockCommandRuntime = new MockCommandRuntime();
 
             newServiceCmdlet = new NewAzureServiceProjectCommand();

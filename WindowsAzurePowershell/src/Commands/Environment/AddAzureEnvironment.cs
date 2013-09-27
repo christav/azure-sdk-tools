@@ -40,15 +40,24 @@ namespace Microsoft.WindowsAzure.Commands.Subscription
         [Parameter(Position = 4, Mandatory = false, HelpMessage = "The storage endpoint")]
         public string StorageEndpoint { get; set; }
 
+        [Parameter(Position = 5, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The URI for the Active Directory service for this environment")]
+        public string AdTenantUrl { get; set; }
+
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         public override void ExecuteCmdlet()
         {
-            WriteObject(GlobalSettingsManager.Instance.AddEnvironmentStorageEndpoint(
-                    Name,
-                    PublishSettingsFileUrl,
-                    ServiceEndpoint,
-                    ManagementPortalUrl,
-                    StorageEndpoint));
+            var newEnvironment = new WindowsAzureEnvironment
+            {
+                Name = Name,
+                PublishSettingsFileUrl = PublishSettingsFileUrl,
+                ServiceEndpoint = ServiceEndpoint,
+                ManagementPortalUrl = ManagementPortalUrl,
+                StorageEndpointSuffix = StorageEndpoint,
+                AdTenantUrl = AdTenantUrl
+            };
+
+            WindowsAzureProfile.Instance.AddEnvironment(newEnvironment);
+            WriteObject(newEnvironment);
         }
     }
 }

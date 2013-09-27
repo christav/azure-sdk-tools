@@ -28,39 +28,40 @@ namespace Microsoft.WindowsAzure.Commands.Test.Environment
     [TestClass]
     public class RemoveAzureEnvironmentTests : TestBase
     {
-        private FileSystemHelper helper;
+        private WindowsAzureProfile testProfile;
 
         [TestInitialize]
         public void SetupTest()
         {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
-            helper = new FileSystemHelper(this);
-            helper.CreateAzureSdkDirectoryAndImportPublishSettings();
+            testProfile = new WindowsAzureProfile(new Mock<IProfileStore>().Object);
+            WindowsAzureProfile.Instance = testProfile;
         }
 
         [TestCleanup]
         public void Cleanup()
         {
-            helper.Dispose();
+            WindowsAzureProfile.ResetInstance();
         }
 
         [TestMethod]
         public void RemovesAzureEnvironment()
         {
-            Mock<ICommandRuntime> commandRuntimeMock = new Mock<ICommandRuntime>();
-            string name = "test";
-            GlobalSettingsManager.Instance.AddEnvironment(name, "test url");
-            RemoveAzureEnvironmentCommand cmdlet = new RemoveAzureEnvironmentCommand()
+            var commandRuntimeMock = new Mock<ICommandRuntime>();
+            const string name = "test";
+            testProfile.AddEnvironment(new WindowsAzureEnvironment
+            {
+                Name = name,
+                PublishSettingsFileUrl = "test url"
+            });
+
+            var cmdlet = new RemoveAzureEnvironmentCommand()
             {
                 CommandRuntime = commandRuntimeMock.Object,
                 Name = name
             };
 
             cmdlet.ExecuteCmdlet();
-
-            Testing.AssertThrows<KeyNotFoundException>(
-                () => GlobalSettingsManager.Instance.GetEnvironment(name),
-                string.Format(Resources.EnvironmentNotFound, name));
+            Assert.IsFalse(WindowsAzureProfile.Instance.Environments.ContainsKey(name));
         }
 
         [TestMethod]

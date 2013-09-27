@@ -14,12 +14,23 @@
 
 namespace Microsoft.WindowsAzure.Commands.Utilities.Common
 {
-    using System.Management.Automation;
-
-    public interface ISessionManager
+    public interface IProfileStore
     {
-        object GetVariable(PSCmdlet cmdlet, string name);
-        void SetVariable(PSCmdlet cmdlet, string name, object value);
-        void ClearVariable(PSCmdlet cmdlet, string name);
+        /// <summary>
+        /// Save the given profile data to the store.
+        /// </summary>
+        /// <param name="profile">Data to store.</param>
+        void Save(ProfileData profile);
+        
+        /// <summary>
+        /// Load from the store.
+        /// </summary>
+        /// <returns>The loaded data.</returns>
+        ProfileData Load();
+
+        /// <summary>
+        /// Destroy the store and it's backing data.
+        /// </summary>
+        void DestroyData();
     }
 }

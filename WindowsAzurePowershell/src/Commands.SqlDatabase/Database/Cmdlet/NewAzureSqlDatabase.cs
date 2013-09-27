@@ -144,11 +144,11 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Database.Cmdlet
             try
             {
                 // Get the current subscription data.
-                SubscriptionData subscriptionData = this.GetCurrentSubscription();
+                WindowsAzureSubscription subscription = WindowsAzureProfile.Instance.CurrentSubscription;
 
                 // Create a temporary context
                 ServerDataServiceCertAuth context =
-                    ServerDataServiceCertAuth.Create(this.ServerName, subscriptionData);
+                    ServerDataServiceCertAuth.Create(this.ServerName, subscription);
 
                 clientRequestId = context.ClientRequestId;
                 

@@ -49,7 +49,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
             var getAzureWebsiteCommand = new GetAzureWebsiteCommand
             {
                 CommandRuntime = new MockCommandRuntime(),
-                CurrentSubscription = new SubscriptionData { SubscriptionId = subscriptionId },
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = subscriptionId },
                 WebsitesClient = clientMock.Object
             };
 
@@ -83,7 +83,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
             var getAzureWebsiteCommand = new GetAzureWebsiteCommand
             {
                 CommandRuntime = new MockCommandRuntime(),
-                CurrentSubscription = new SubscriptionData { SubscriptionId = subscriptionId },
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = subscriptionId },
                 Name = "website1",
                 WebsitesClient = clientMock.Object
             };
@@ -102,7 +102,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
             getAzureWebsiteCommand = new GetAzureWebsiteCommand
             {
                 CommandRuntime = new MockCommandRuntime(),
-                CurrentSubscription = new SubscriptionData { SubscriptionId = "GetAzureWebSiteTests_GetWebsiteProcessShowTest" },
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = "GetAzureWebSiteTests_GetWebsiteProcessShowTest" },
                 Name = "WEBSiTe1",
                 WebsitesClient = clientMock.Object
             };
@@ -121,25 +121,12 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
         [TestMethod]
         public void ProcessGetWebsiteWithNullSubscription()
         {
-            // Setup
-            GlobalSettingsManager globalSettingsManager = GlobalSettingsManager.CreateFromPublishSettings(
-                GlobalPathInfo.GlobalSettingsDirectory,
-                null,
-                Data.ValidPublishSettings[0]);
-            var removeCmdlet = new RemoveAzureSubscriptionCommand {CommandRuntime = new MockCommandRuntime()};
-
-            ICollection<string> subscriptions = globalSettingsManager.Subscriptions.Keys;
-
-            foreach (string subscription in subscriptions)
-            {
-                removeCmdlet.RemoveSubscriptionProcess(subscription ,null);
-            }
-
             // Test
             var getAzureWebsiteCommand = new GetAzureWebsiteCommand
             {
                 CommandRuntime = new MockCommandRuntime(),
-                CurrentSubscription = null
+                CurrentSubscription = null,
+                Profile = new WindowsAzureProfile(new Mock<IProfileStore>().Object)
             };
 
             Testing.AssertThrows<Exception>(getAzureWebsiteCommand.ExecuteCmdlet, Resources.NoDefaultSubscriptionMessage);
@@ -162,7 +149,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
             var getAzureWebsiteCommand = new GetAzureWebsiteCommand
             {
                 CommandRuntime = new MockCommandRuntime(),
-                CurrentSubscription = new SubscriptionData { SubscriptionId = subscriptionId },
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = subscriptionId },
                 Name = "website1",
                 WebsitesClient = websitesClientMock.Object
             };

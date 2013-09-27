@@ -19,7 +19,7 @@ namespace Microsoft.WindowsAzure.Commands.Utilities.Websites.Common
     using System.Security.Permissions;
     using Services;
 
-    public abstract class WebsiteContextBaseCmdlet : WebsitesBaseCmdlet
+    public abstract class WebsiteContextBaseCmdlet : WebsiteClientBaseCmdlet
     {
         [Parameter(Position = 0, Mandatory = false, ValueFromPipelineByPropertyName = true, HelpMessage = "The web site name.")]
         [ValidateNotNullOrEmpty]

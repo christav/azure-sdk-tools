@@ -21,7 +21,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
     /// Starts an azure website.
     /// </summary>
     [Cmdlet(VerbsLifecycle.Start, "AzureWebsite"), OutputType(typeof(bool))]
-    public class StartAzureWebsiteCommand : WebsiteClientBaseCmdlet
+    public class StartAzureWebsiteCommand : WebsiteContextBaseCmdlet
     {
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru { get; set; }

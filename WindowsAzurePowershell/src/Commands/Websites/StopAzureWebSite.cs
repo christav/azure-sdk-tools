@@ -21,7 +21,7 @@ namespace Microsoft.WindowsAzure.Commands.Websites
     /// Stops an azure website.
     /// </summary>
     [Cmdlet(VerbsLifecycle.Stop, "AzureWebsite"), OutputType(typeof(bool))]
-    public class StopAzureWebsiteCommand : WebsiteClientBaseCmdlet
+    public class StopAzureWebsiteCommand : WebsiteContextBaseCmdlet
     {
 
         [Parameter(Mandatory = false)]

@@ -43,7 +43,7 @@ namespace Microsoft.WindowsAzure.Commands.Test.Websites
                 CommandRuntime = new MockCommandRuntime(),
                 WebsitesClient = mockClient.Object,
                 Name = "website1",
-                CurrentSubscription = new SubscriptionData { SubscriptionId = base.subscriptionId }
+                CurrentSubscription = new WindowsAzureSubscription { SubscriptionId = base.subscriptionId }
             };
 
             // Delete existing website

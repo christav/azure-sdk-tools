@@ -183,13 +183,13 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Test.UnitTests.Database.Cm
                 return response;
             };
 
-            SubscriptionData subscriptionData = UnitTestHelper.CreateUnitTestSubscription();
-            subscriptionData.ServiceEndpoint = MockHttpServer.DefaultHttpsServerPrefixUri.AbsoluteUri;
+            WindowsAzureSubscription subscription = UnitTestHelper.CreateUnitTestSubscription();
+            subscription.ServiceEndpoint = new Uri(MockHttpServer.DefaultHttpsServerPrefixUri.AbsoluteUri);
 
             NewAzureSqlDatabaseServerContext contextCmdlet = new NewAzureSqlDatabaseServerContext();
 
             ServerDataServiceCertAuth service = 
-                contextCmdlet.GetServerDataServiceByCertAuth("TestServer", subscriptionData);
+                contextCmdlet.GetServerDataServiceByCertAuth("TestServer", subscription);
             service.Channel = channel;
 
             Database database = service.UpdateDatabase("testdb1", "testdb1", 5, null, null);
@@ -440,13 +440,13 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Test.UnitTests.Database.Cm
                 return response;
             };
 
-            SubscriptionData subscriptionData = UnitTestHelper.CreateUnitTestSubscription();
-            subscriptionData.ServiceEndpoint = MockHttpServer.DefaultHttpsServerPrefixUri.AbsoluteUri;
+            WindowsAzureSubscription subscription = UnitTestHelper.CreateUnitTestSubscription();
+            subscription.ServiceEndpoint = new Uri(MockHttpServer.DefaultHttpsServerPrefixUri.AbsoluteUri);
 
             NewAzureSqlDatabaseServerContext contextCmdlet = new NewAzureSqlDatabaseServerContext();
 
             ServerDataServiceCertAuth service = 
-                contextCmdlet.GetServerDataServiceByCertAuth("TestServer", subscriptionData);
+                contextCmdlet.GetServerDataServiceByCertAuth("TestServer", subscription);
             service.Channel = channel;
 
             Database database = service.UpdateDatabase("testdb1", "newTestDb1", null, null, null);

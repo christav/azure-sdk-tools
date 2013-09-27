@@ -28,15 +28,6 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Test.UnitTests.Database.Cm
     public class ExportAzureSqlDatabaseTests : TestBase
     {
         /// <summary>
-        /// Initializes the test environment
-        /// </summary>
-        [TestInitialize]
-        public void SetupTest()
-        {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
-        }
-
-        /// <summary>
         /// Tests the ExportAzureSqlDatabaseProcess function 
         /// </summary>
         [TestMethod]

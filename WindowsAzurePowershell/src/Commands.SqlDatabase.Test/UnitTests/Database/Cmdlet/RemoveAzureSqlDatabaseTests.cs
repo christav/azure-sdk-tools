@@ -163,13 +163,13 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Test.UnitTests.Database.Cm
                     "The database Edition input parameter does not match");
             };
 
-            SubscriptionData subscriptionData = UnitTestHelper.CreateUnitTestSubscription();
-            subscriptionData.ServiceEndpoint = MockHttpServer.DefaultHttpsServerPrefixUri.AbsoluteUri;
+            WindowsAzureSubscription subscription = UnitTestHelper.CreateUnitTestSubscription();
+            subscription.ServiceEndpoint = new Uri(MockHttpServer.DefaultHttpsServerPrefixUri.AbsoluteUri);
 
             NewAzureSqlDatabaseServerContext contextCmdlet = new NewAzureSqlDatabaseServerContext();
 
             ServerDataServiceCertAuth service = 
-                contextCmdlet.GetServerDataServiceByCertAuth("TestServer", subscriptionData);
+                contextCmdlet.GetServerDataServiceByCertAuth("TestServer", subscription);
             service.Channel = channel;
 
             service.RemoveDatabase("testdb1");

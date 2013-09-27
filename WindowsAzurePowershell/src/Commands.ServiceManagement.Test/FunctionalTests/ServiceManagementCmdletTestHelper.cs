@@ -690,8 +690,8 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.Test.FunctionalTests
 
         public SubscriptionData SetDefaultAzureSubscription(string subscriptionName)
         {
-            SetAzureSubscriptionCmdletInfo setAzureSubscriptionCmdlet = new SetAzureSubscriptionCmdletInfo(subscriptionName);
-            WindowsAzurePowershellCmdlet azurePowershellCmdlet = new WindowsAzurePowershellCmdlet(setAzureSubscriptionCmdlet);
+            SelectAzureSubscriptionCmdletInfo selectAzureSubscriptionCmdlet = new SelectAzureSubscriptionCmdletInfo(subscriptionName);
+            WindowsAzurePowershellCmdlet azurePowershellCmdlet = new WindowsAzurePowershellCmdlet(selectAzureSubscriptionCmdlet);
             azurePowershellCmdlet.Run();
 
             Collection<SubscriptionData> subscriptions = GetAzureSubscription();
@@ -1272,8 +1272,7 @@ namespace Microsoft.WindowsAzure.Commands.ServiceManagement.Test.FunctionalTests
             // Check if all subscriptions are removed.
             try
             {
-                GetAzureSubscription();
-                Assert.Fail("Subscription was not removed!");
+                Assert.AreEqual(0, GetAzureSubscription().Count, "Subscription was not removed");
             }
             catch (Exception e)
             {

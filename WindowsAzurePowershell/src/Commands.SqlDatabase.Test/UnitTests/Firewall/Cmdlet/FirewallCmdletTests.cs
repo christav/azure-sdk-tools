@@ -25,12 +25,6 @@ namespace Microsoft.WindowsAzure.Commands.SqlDatabase.Test.UnitTests.Firewall.Cm
     [TestClass]
     public class AzureSqlDatabaseServerTests : TestBase
     {
-        [TestInitialize]
-        public void SetupTest()
-        {
-            CmdletSubscriptionExtensions.SessionManager = new InMemorySessionManager();
-        }
-
         [TestMethod]
         public void NewAzureSqlDatabaseServerFirewallRuleProcessTest()
         {
