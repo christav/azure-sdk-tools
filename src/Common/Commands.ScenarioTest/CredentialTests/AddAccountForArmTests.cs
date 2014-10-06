@@ -24,7 +24,7 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
         {
         }
 
-        [Theory]
+        // [Theory] Disabling pending better test setup
         [InlineData("Test-AddOrgIdWithSingleSubscription")]
         [InlineData("Test-NonInteractiveFPOLoginFails")]
         [InlineData("Test-MicrosoftAccountNotSupportedForNonInteractiveLogin")]
