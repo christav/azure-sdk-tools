@@ -38,7 +38,13 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Azure.Utilities.HttpRecorder, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Azure.Graph.RBAC">
+      <HintPath>..\..\packages\Microsoft.Azure.Graph.RBAC.1.4.0-preview\lib\net40\Microsoft.Azure.Graph.RBAC.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Azure.Management.Authorization">
+      <HintPath>..\..\packages\Microsoft.Azure.Management.Authorization.0.12.0-preview\lib\net40\Microsoft.Azure.Management.Authorization.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Azure.Utilities.HttpRecorder">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Hydra.HttpRecorder.1.0.5399.28277-prerelease\lib\net45\Microsoft.Azure.Utilities.HttpRecorder.dll</HintPath>
     </Reference>
@@ -268,6 +274,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Compile Include="CredentialTests\AddAccountForArmTests.cs" />
+    <Compile Include="CredentialTests\CredentialTestAccountCreator.cs" />
     <Compile Include="CredentialTests\CredentialTestBase.cs" />
     <Compile Include="CredentialTests\CredentialTestHelper.cs" />
     <Compile Include="MediaServicesTests\MediaServicesTests.cs" />

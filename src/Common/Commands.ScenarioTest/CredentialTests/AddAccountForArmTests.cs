@@ -18,14 +18,17 @@ using Xunit.Extensions;
 
 namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
 {
-    public class AddAccountForArmTests : CredentialTestBase
+    public class AddAccountForArmTests : CredentialTestBase, IUseFixture<CredentialTestAccountCreator>
     {
         public AddAccountForArmTests() : 
             base(AzureModule.AzureResourceManager)
         {
         }
 
-        
+        public void SetFixture(CredentialTestAccountCreator data)
+        {
+        }
+
         [Theory]
         [Trait(Category.RunType, Category.LiveOnly)]
         [InlineData("Test-AddOrgIdWithSingleSubscription")]
