@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Azure.Graph.RBAC;
 using Microsoft.Azure.Graph.RBAC.Models;
@@ -12,12 +13,13 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
     public class CredentialTestAccountCreator : IDisposable
     {
         // Keys used for storing information in the mock recording.
+        private const string orgIdOneSubscriptionKey = "OrgIdOneSubscription";
 
         private readonly TestEnvironment testEnvironment;
         private string tenantId;
-        private bool disposed = false;
+        private bool disposed;
 
-        private User userToDelete;
+        private CreatedUserInfo userToDelete;
         private RoleAssignment roleAssignmentToDelete;
 
         public CredentialTestAccountCreator()
@@ -31,14 +33,12 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
 
                 if (HttpMockServer.Mode != HttpRecorderMode.Playback)
                 {
-                    try
+                    userToDelete = CreateDomainUser();
+                    roleAssignmentToDelete = AddUserAsSubscriptionOwner(userToDelete);
+
+                    if (HttpMockServer.Mode == HttpRecorderMode.Record)
                     {
-                        userToDelete = CreateDomainUser();
-                        roleAssignmentToDelete = AddUserAsSubscriptionOwner(userToDelete);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
+                        HttpMockServer.Variables[orgIdOneSubscriptionKey] = userToDelete.ConnectionString;
                     }
                 }
             }
@@ -47,7 +47,7 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
         public void Dispose()
         {
             if (disposed) { return; }
-            using (UndoContext ctx = UndoContext.Current)
+            using (UndoContext.Current)
             {
                 if (HttpMockServer.Mode != HttpRecorderMode.Playback)
                 {
@@ -93,12 +93,12 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
                 testEnvironment.BaseUri);
         }
 
-        private User CreateDomainUser()
+        private CreatedUserInfo CreateDomainUser()
         {
             string username = string.Format("CredTestUser-{0}", Guid.NewGuid());
             string upn = string.Format("{0}@{1}", username, GetCurrentDomain());
 
-            var parameters = new UserCreateParameters()
+            var parameters = new UserCreateParameters
             {
                 UserPrincipalName = upn,
                 DisplayName = username,
@@ -113,10 +113,11 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
 
             var graphClient = CreateGraphClient();
             var response = graphClient.User.Create(parameters);
-            return response.User;
+            return new CreatedUserInfo(response.User, parameters.PasswordProfileSettings.Password, testEnvironment,
+                testEnvironment.SubscriptionId);
         }
 
-        private RoleAssignment AddUserAsSubscriptionOwner(User user)
+        private RoleAssignment AddUserAsSubscriptionOwner(CreatedUserInfo user)
         {
             var authClient = CreateAuthClient();
 
@@ -135,6 +136,60 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
             };
 
             return authClient.RoleAssignments.CreateById(assignmentId, createAssignmentParameters).RoleAssignment;
+        }
+
+        private class CreatedUserInfo
+        {
+            public string UserName { get; set; }
+            public string ObjectId { get; set; }
+            public string Password { get; set; }
+            public TestEnvironment Environment { get; set; }
+            public string ExpectedSubscriptionId { get; set; }
+            public string TenantId { get; set; }
+
+            public CreatedUserInfo()
+            {
+                
+            }
+
+            public CreatedUserInfo(User user, string password, 
+                TestEnvironment environment, 
+                string expectedSubscriptionId, string tenantId = null)
+            {
+                UserName = user.SignInName;
+                ObjectId = user.ObjectId;
+                Password = password;
+                Environment = environment;
+                ExpectedSubscriptionId = expectedSubscriptionId;
+                TenantId = tenantId;
+            }
+
+            public string ConnectionString
+            {
+                get
+                {
+                    var parts = new List<string>
+                    {
+                        AddPart(ConnectionStringFields.UserId, UserName),
+                        AddPart(ConnectionStringFields.Password, Password),
+                        AddPart(ConnectionStringFields.SubscriptionId, ExpectedSubscriptionId),
+                        AddPart(ConnectionStringFields.AADTenant, TenantId),
+                        AddPart(ConnectionStringFields.BaseUri, Environment.BaseUri),
+                        AddPart(ConnectionStringFields.GraphUri, Environment.GraphUri),
+                        AddPart(ConnectionStringFields.AADAuthenticationEndpoint, Environment.ActiveDirectoryEndpoint)
+                    }.Where(p => p != null).ToArray();
+                    return string.Join(";", parts);
+                }
+            }
+
+            private static string AddPart(string key, object value)
+            {
+                if (value != null)
+                {
+                    return string.Format("{0}={1}", key, value);
+                }
+                return null;
+            }
         }
     }
 }
