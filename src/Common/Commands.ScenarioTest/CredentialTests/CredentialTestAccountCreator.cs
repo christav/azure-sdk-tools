@@ -19,8 +19,13 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
         private string tenantId;
         private bool disposed;
 
-        private CreatedUserInfo userToDelete;
-        private RoleAssignment roleAssignmentToDelete;
+        private readonly CreatedUserInfo userToDelete;
+        private readonly RoleAssignment roleAssignmentToDelete;
+
+        public string OneSubscriptionOwnerConnectionString
+        {
+            get { return userToDelete.ConnectionString; }
+        }
 
         public CredentialTestAccountCreator()
         {
@@ -33,12 +38,20 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
 
                 if (HttpMockServer.Mode != HttpRecorderMode.Playback)
                 {
-                    userToDelete = CreateDomainUser();
-                    roleAssignmentToDelete = AddUserAsSubscriptionOwner(userToDelete);
-
-                    if (HttpMockServer.Mode == HttpRecorderMode.Record)
+                    try
                     {
-                        HttpMockServer.Variables[orgIdOneSubscriptionKey] = userToDelete.ConnectionString;
+                        userToDelete = CreateDomainUser();
+                        roleAssignmentToDelete = AddUserAsSubscriptionOwner(userToDelete);
+
+                        if (HttpMockServer.Mode == HttpRecorderMode.Record)
+                        {
+                            HttpMockServer.Variables[orgIdOneSubscriptionKey] = userToDelete.ConnectionString;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        throw;
                     }
                 }
             }

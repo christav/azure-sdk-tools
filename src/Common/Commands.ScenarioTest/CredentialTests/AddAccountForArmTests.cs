@@ -12,6 +12,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
+using System;
 using Microsoft.WindowsAzure.Commands.Utilities.Common;
 using Xunit;
 using Xunit.Extensions;
@@ -27,6 +28,7 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
 
         public void SetFixture(CredentialTestAccountCreator data)
         {
+            Environment.SetEnvironmentVariable("AZURE_ORGID_ONE_TENANT_ONE_SUBSCRIPTION", data.OneSubscriptionOwnerConnectionString);
         }
 
         [Theory]
