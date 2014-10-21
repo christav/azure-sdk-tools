@@ -29,6 +29,11 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
 
         public CredentialTestAccountCreator()
         {
+            // TODO: Remove this once mocks are set up
+            Environment.SetEnvironmentVariable("AZURE_TEST_MODE", "None");
+            // TODO: REMOVE THIS ONCE DEBUGGING IS DONE
+            Environment.SetEnvironmentVariable("TEST_CSM_ORGID_AUTHENTICATION",
+                "SubscriptionId=2804ae14-b835-4630-ac14-44f01a5a8c28;Environment=Prod;UserId=regularuser@cctadexp1.onmicrosoft.com;Password=P@ssw0rd;AADTenant=4b1066c2-4cbb-4eda-800a-78581bcb602b");
             var testFactory = new CSMTestEnvironmentFactory();
             testEnvironment = testFactory.GetTestEnvironment();
 
@@ -94,7 +99,7 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
         {
             tenantId = testEnvironment.AuthorizationContext.TenatId;
 
-            return new GraphRbacManagementClient(tenantId, testEnvironment.Credentials as SubscriptionCloudCredentials, testEnvironment.GraphUri);
+            return new GraphRbacManagementClient(tenantId, testEnvironment.Credentials as SubscriptionCloudCredentials, testEnvironment.Endpoints.GraphUri);
         }
 
         // Create a non-mocked Authorization client - this is only used during setup during
@@ -188,8 +193,8 @@ namespace Microsoft.WindowsAzure.Commands.ScenarioTest.CredentialTests
                         AddPart(ConnectionStringFields.SubscriptionId, ExpectedSubscriptionId),
                         AddPart(ConnectionStringFields.AADTenant, TenantId),
                         AddPart(ConnectionStringFields.BaseUri, Environment.BaseUri),
-                        AddPart(ConnectionStringFields.GraphUri, Environment.GraphUri),
-                        AddPart(ConnectionStringFields.AADAuthenticationEndpoint, Environment.ActiveDirectoryEndpoint)
+                        AddPart(ConnectionStringFields.GraphUri, Environment.Endpoints.GraphUri),
+                        AddPart(ConnectionStringFields.AADAuthenticationEndpoint, Environment.Endpoints.AADAuthUri)
                     }.Where(p => p != null).ToArray();
                     return string.Join(";", parts);
                 }
